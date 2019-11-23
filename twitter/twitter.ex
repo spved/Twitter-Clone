@@ -38,11 +38,11 @@ def main(args) do
 
 users = :ets.new(:users, [:named_table,:public])
 
-:ets.insert_new(users, {"1", ["user1","pwd_user1","user1@mail.com"]})
-:ets.insert_new(users, {"2", ["user2","pwd_user2","user2@mail.com"]})
-:ets.insert_new(users, {"3", ["user3","pwd_user3","user3@mail.com"]})
-:ets.insert_new(users, {"4", ["user4","pwd_user4","user4@mail.com"]})
-:ets.insert_new(users, {"5", ["user5","pwd_user5","user5@mail.com"]})
+:ets.insert_new(users, {"1", ["user1","pwd_user1","user1@mail.com","1"]})
+:ets.insert_new(users, {"2", ["user2","pwd_user2","user2@mail.com","0"]})
+:ets.insert_new(users, {"3", ["user3","pwd_user3","user3@mail.com","0"]})
+:ets.insert_new(users, {"4", ["user4","pwd_user4","user4@mail.com","1"]})
+:ets.insert_new(users, {"5", ["user5","pwd_user5","user5@mail.com","0"]})
 
 tweets = :ets.new(:tweets, [:named_table,:public])
 
@@ -101,6 +101,8 @@ hashTagTweetMap = :ets.new(:hashTagTweetMap, [:named_table,:public])
  Twitter.Client.querySubscribedTo("3",subscribers,tweetUserMap,tweets)
  #Twitter.Client.querySubscribedTo("6",subscribers,tweetUserMap, tweets)
 
+ Twitter.Client.isLogin("3", users)
+ Twitter.Client.isLogin("7", users)
  #Twitter.queryHashTags("#DOS",hashTagTweetMap, tweets)
  end
 

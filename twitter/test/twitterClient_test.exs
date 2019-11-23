@@ -36,5 +36,7 @@ defmodule TwitterClientTest do
 
     #"#DOS project uses #GenServer", "DOS project 5", "#Concurrency is main concept of #DOS"]
     assert Twitter.Client.querySubscribedTo("3",subscribers,tweetUserMap, tweets) == ["#DOS project uses #GenServer", "DOS project 5", "#Concurrency is main concept of #DOS"]
+    assert Twitter.Client.querySubscribedTo("6",subscribers,tweetUserMap, tweets) == []
+
   end
 end
