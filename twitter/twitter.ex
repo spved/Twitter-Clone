@@ -37,10 +37,8 @@ def queryHashTags(hashTag, hashTagTweetMap, tweets) do
   [{_, currentList}] = :ets.lookup(hashTagTweetMap, hashTag)
   Enum.map(currentList, fn ni ->
          IO.inspect ni
-          IO.inspect :ets.lookup(tweets, ni)
-          
-         #IO.inspect tweetList
-         #Twitter.send(ni,tweetData)
+         [{_, tweet}] = :ets.lookup(tweets,ni)
+         IO.inspect tweet
         end)
 end
 
@@ -62,11 +60,11 @@ users = :ets.new(:users, [:named_table,:public])
 
 tweets = :ets.new(:tweets, [:named_table,:public])
 
-:ets.insert_new(tweets, {"T1", ["#DOS project uses #GenServer"]})
-:ets.insert_new(tweets, {"T2", ["#Elixir vs #Scala"]})
-:ets.insert_new(tweets, {"T3", ["#Concurrency is main concept of #DOS"]})
-:ets.insert_new(tweets, {"T4", ["DOS project 4"]})
-:ets.insert_new(tweets, {"T5", ["DOS project 5"]})
+:ets.insert_new(tweets, {"T1", "#DOS project uses #GenServer"})
+:ets.insert_new(tweets, {"T2", "#Elixir vs #Scala"})
+:ets.insert_new(tweets, {"T3", "#Concurrency is main concept of #DOS"})
+:ets.insert_new(tweets, {"T4", "DOS project 4"})
+:ets.insert_new(tweets, {"T5", "DOS project 5"})
 
 #subscribers = bag.new()
 #Bag.add_new!(subscribers, {})
@@ -95,21 +93,17 @@ tweetUserMap = :ets.new(:tweetUserMap, [:named_table,:public])
 :ets.insert_new(tweetUserMap, {"4", ["T4","T9"]})
 :ets.insert_new(tweetUserMap, {"5", ["T3"]})
 
-hashTags = :ets.new(:hashTags, [:named_table,:public])
-
-:ets.insert_new(hashTags, { ["#DOS"],"H1"})
-:ets.insert_new(hashTags, { ["#GenServer"],"H2"})
-:ets.insert_new(hashTags, {["#Concurrency"],"H3"})
-:ets.insert_new(hashTags, { ["#Elixir"],"H4"})
-:ets.insert_new(hashTags, { ["#Scala"],"H5"})
 
 hashTagTweetMap = :ets.new(:hashTagTweetMap, [:named_table,:public])
 
-:ets.insert_new(hashTagTweetMap, {"H1", ["T1","T3"]})
-:ets.insert_new(hashTagTweetMap, {"H2", ["T1"]})
-:ets.insert_new(hashTagTweetMap, {"H3", ["T3"]})
-:ets.insert_new(hashTagTweetMap, {"H4", ["T2"]})
-:ets.insert_new(hashTagTweetMap, {"H5", ["T2"]})
+:ets.insert_new(hashTagTweetMap, {"#DOS", ["T1","T3"]})
+:ets.insert_new(hashTagTweetMap, {"#GenServer", ["T1"]})
+:ets.insert_new(hashTagTweetMap, {"#Concurrency", ["T3"]})
+:ets.insert_new(hashTagTweetMap, {"#Elixir", ["T2"]})
+:ets.insert_new(hashTagTweetMap, {"#Scala", ["T2"]})
+ 
+ [{_, currentList}] = :ets.lookup(hashTagTweetMap, "#Concurrency")
+IO.inspect currentList
  
   #IO.inspect length(users)
   #IO.inspect :ets.lookup(users, "2")
@@ -120,7 +114,7 @@ hashTagTweetMap = :ets.new(:hashTagTweetMap, [:named_table,:public])
  #Twitter.tweet("3", "tweet1", subscribers)
  Twitter.querySubscribedTo("3",subscribers,tweetUserMap)
 
- #Twitter.queryHashTags("H1",hashTags,hashTagTweetMap, tweets)
+ Twitter.queryHashTags("#DOS",hashTagTweetMap, tweets)
  end
 
 end
