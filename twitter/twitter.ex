@@ -89,18 +89,19 @@ hashTagTweetMap = :ets.new(:hashTagTweetMap, [:named_table,:public])
 :ets.insert_new(hashTagTweetMap, {"#Scala", ["T2"]})
 
  [{_, currentList}] = :ets.lookup(hashTagTweetMap, "#Concurrency")
-IO.inspect currentList
+#IO.inspect currentList
 
   #IO.inspect length(users)
   #IO.inspect :ets.lookup(users, "2")
 
- Twitter.register("user6","pwd_user6","user6@gmail.com",users)
+ #Twitter.register("user6","pwd_user6","user6@gmail.com",users)
  #IO.inspect :ets.lookup(users, "6")
 
  #Twitter.tweet("3", "tweet1", subscribers)
- Twitter.Client.querySubscribedTo("3",subscribers,tweetUserMap)
+ Twitter.Client.querySubscribedTo("3",subscribers,tweetUserMap,tweets)
+ #Twitter.Client.querySubscribedTo("6",subscribers,tweetUserMap, tweets)
 
- Twitter.queryHashTags("#DOS",hashTagTweetMap, tweets)
+ #Twitter.queryHashTags("#DOS",hashTagTweetMap, tweets)
  end
 
 end
