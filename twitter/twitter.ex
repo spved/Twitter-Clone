@@ -2,21 +2,12 @@ defmodule Twitter do
 
 def register(username,password,email,users) do
   #IO.inspect :ets.first(users)
-  #IO.inspect :ets.lookup(users, "5")
-  :ets.insert_new(users, {"6", [username,password,email]})
+  #IO.inspect :ets.lookup(users, "user5")
+  :ets.insert_new(users, {"user6", [username,password,email]})
 end
 
 def delete(users,username) do
  :ets.delete(:users, username)
-end
-
-def tweet(userId, tweetData, subscribers) do
- IO.inspect :ets.lookup(subscribers, userId)
-  [{_, currentList}] = :ets.lookup(subscribers, userId)
-  Enum.map(currentList, fn ni ->
-         IO.inspect ni
-         Twitter.send(ni,tweetData)
-        end)
 end
 
 def queryHashTags(hashTag, hashTagTweetMap, tweets) do
@@ -28,21 +19,15 @@ def queryHashTags(hashTag, hashTagTweetMap, tweets) do
         end)
 end
 
-def send(userId, tweetData) do
- #handle here
-end
-
-
-
 def main(args) do
 
 users = :ets.new(:users, [:named_table,:public])
 
-:ets.insert_new(users, {"1", ["user1","pwd_user1","user1@mail.com","1"]})
-:ets.insert_new(users, {"2", ["user2","pwd_user2","user2@mail.com","0"]})
-:ets.insert_new(users, {"3", ["user3","pwd_user3","user3@mail.com","0"]})
-:ets.insert_new(users, {"4", ["user4","pwd_user4","user4@mail.com","1"]})
-:ets.insert_new(users, {"5", ["user5","pwd_user5","user5@mail.com","0"]})
+:ets.insert_new(users, {"user1", ["pwd_user1","user1@mail.com","1"]})
+:ets.insert_new(users, {"user2", ["pwd_user2","user2@mail.com","0"]})
+:ets.insert_new(users, {"user3", ["pwd_user3","user3@mail.com","0"]})
+:ets.insert_new(users, {"user4", ["pwd_user4","user4@mail.com","0"]})
+:ets.insert_new(users, {"user5", ["pwd_user5","user5@mail.com","0"]})
 
 tweets = :ets.new(:tweets, [:named_table,:public])
 
@@ -57,26 +42,26 @@ tweets = :ets.new(:tweets, [:named_table,:public])
 
 subscribers = :ets.new(:subscribers, [:named_table,:public])
 
-:ets.insert_new(subscribers, {"1", ["3","2","6"]})
-:ets.insert_new(subscribers, {"2", ["6"]})
-:ets.insert_new(subscribers, {"3", ["1","5"]})
-:ets.insert_new(subscribers, {"4", ["5"]})
-:ets.insert_new(subscribers, {"5", ["3","2"]})
+:ets.insert_new(subscribers, {"user1", ["user3","user2","user6"]})
+:ets.insert_new(subscribers, {"user2", ["user6"]})
+:ets.insert_new(subscribers, {"user3", ["user1","user5","user4"]})
+:ets.insert_new(subscribers, {"user4", ["user5"]})
+:ets.insert_new(subscribers, {"user5", ["user3","user2"]})
 
 subscribedTo = :ets.new(:subscribedTo, [:named_table,:public])
 
-:ets.insert_new(subscribedTo, {"1", ["5","6"]})
-:ets.insert_new(subscribedTo, {"2", ["1","3"]})
-:ets.insert_new(subscribedTo, {"3", ["1","6"]})
-:ets.insert_new(subscribedTo, {"4", ["2","3"]})
-:ets.insert_new(subscribedTo, {"5", []})
+:ets.insert_new(subscribedTo, {"user1", ["user5","user6"]})
+:ets.insert_new(subscribedTo, {"user2", ["user1","user3"]})
+:ets.insert_new(subscribedTo, {"user3", ["user1","user6"]})
+:ets.insert_new(subscribedTo, {"user4", ["user2","user3"]})
+:ets.insert_new(subscribedTo, {"user5", []})
 
 tweetUserMap = :ets.new(:tweetUserMap, [:named_table,:public])
 
-:ets.insert_new(tweetUserMap, {"1", ["T1","T5"]})
-:ets.insert_new(tweetUserMap, {"2", ["T2","T6"]})
-:ets.insert_new(tweetUserMap, {"3", ["T8"]})
-:ets.insert_new(tweetUserMap, {"4", ["T4","T9"]})
+:ets.insert_new(tweetUserMap, {"user1", ["T1","T5"]})
+:ets.insert_new(tweetUserMap, {"user2", ["T2","T6"]})
+:ets.insert_new(tweetUserMap, {"user3", ["T8"]})
+:ets.insert_new(tweetUserMap, {"user4", ["T4","T9"]})
 :ets.insert_new(tweetUserMap, {"5", ["T3"]})
 
 
@@ -92,17 +77,27 @@ hashTagTweetMap = :ets.new(:hashTagTweetMap, [:named_table,:public])
 #IO.inspect currentList
 
   #IO.inspect length(users)
-  #IO.inspect :ets.lookup(users, "2")
+  #IO.inspect :ets.lookup(users, "user2")
 
  #Twitter.register("user6","pwd_user6","user6@gmail.com",users)
- #IO.inspect :ets.lookup(users, "6")
+ #IO.inspect :ets.lookup(users, "user6")
 
- #Twitter.tweet("3", "tweet1", subscribers)
- Twitter.Client.querySubscribedTo("3",subscribers,tweetUserMap,tweets)
- #Twitter.Client.querySubscribedTo("6",subscribers,tweetUserMap, tweets)
+ #Twitter.tweet("user3", "tweet1", subscribers)
+ Twitter.Client.querySubscribedTo("user3",subscribers,tweetUserMap,tweets)
+ #Twitter.Client.querySubscribedTo("user6",subscribers,tweetUserMap, tweets)
 
- Twitter.Client.isLogin("3", users)
- Twitter.Client.isLogin("7", users)
+ Twitter.Client.isLogin("user3", users)
+ Twitter.Client.isLogin("user7", users)
+ Twitter.Client.login("user4", "pwd_uer4", users)
+ Twitter.Client.login("user4", "pwd_user4", users)
+ Twitter.Client.login("user7", "pwd_uer4", users)
+
+ Twitter.Client.tweet("user3", "Got the first tweet #hiveFive", subscribers, users)
+ Twitter.Client.reTweet("user5", "Got the first tweet #hiveFive", subscribers, users)
+
+ Twitter.Client.logout("user4", users)
+ Twitter.Client.tweet("user3", "Got the second tweet #hiveFive", subscribers, users)
+
  #Twitter.queryHashTags("#DOS",hashTagTweetMap, tweets)
  end
 
