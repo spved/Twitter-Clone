@@ -14,10 +14,6 @@ def getSubscribers(userId, subscribers) do
  userSubscribers
 end
 
-def sendTweet(userId, tweet) do
-
-end
-
 def validateUser([]) do
   false
 end
@@ -34,7 +30,7 @@ def login(userName, password, users) do
     list = readValue(:ets.lookup(users, userName))
     userPassword = List.first(list)
     if userPassword == password do
-      :ets.insert(users, {userName, List.replace_at(list, 2, "1")})
+      :ets.insert(users, {userName, List.replace_at(list, 2, 1)})
     end
   end
 end
@@ -42,7 +38,7 @@ end
 def logout(userName, users) do
   if validateUser(userName, users) do
     list = readValue(:ets.lookup(users, userName))
-    :ets.insert(users, {userName, List.replace_at(list, 2, "0")})
+    :ets.insert(users, {userName, List.replace_at(list, 2, 0)})
   end
 end
 
@@ -116,7 +112,7 @@ def updateHashTagTweetMap(hash, tweetId, hashTagTweetMap) do
 end
 
 def readTweet(tweets,tweetId, hashTagTweetMap, users, mentionUserMap) do
-[{_, tweet}] = :ets.lookup(tweets, tweetId)
+  tweet = readValue(:ets.lookup(tweets, tweetId))
   #IO.inspect tweet
   #IO.inspect String.contains? tweet, "@"
   #IO.inspect String.contains? tweet, "#"

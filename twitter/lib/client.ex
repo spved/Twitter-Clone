@@ -1,7 +1,17 @@
 defmodule Twitter.Client do
   use GenServer
+  def handle_cast({:register,username,password,email}, state) do
+      #IO.inspect :ets.first(users)
+      #IO.inspect :ets.lookup(users, "user5")
+      {_,engine} = state
+      #:ets.insert_new(users, {username, [password,email,0]})
+      Genserver.cast(engine, {:insertUser, self(), username, password, email})
+      state = {username, engine}
+  end
 
-
+    def delete(users,username) do
+     :ets.delete(:users, username)
+    end
 
   def querySubscribedTo(userId, subscribers, tweetUserMap, tweets) do
    currentList = Twitter.Helper.readValue(:ets.lookup(subscribers, userId))
@@ -33,16 +43,6 @@ defmodule Twitter.Client do
 
 
 
-  def register(username,password,email,users) do
-    #IO.inspect :ets.first(users)
-    #IO.inspect :ets.lookup(users, "user5")
-    :ets.insert_new(users, {username, [username,password,email]})
-  end
-
-  def delete(users,username) do
-   :ets.delete(:users, username)
-  end
-
   def queryHashTags(hashTag, hashTagTweetMap, tweets) do
     currentList = Twitter.Helper.readValue(:ets.lookup(hashTagTweetMap, hashTag))
     Enum.map(currentList, fn ni ->
@@ -63,7 +63,7 @@ defmodule Twitter.Client do
 
 
   def receive(userName, tweetUser, tweet, users) do
-    if Twitter.Helper.isLogin(userName, users) == "1" do
+    if Twitter.Helper.isLogin(userName, users) == 1 do
       IO.inspect [tweetUser,tweet], label: userName
     end
   end
@@ -83,6 +83,19 @@ defmodule Twitter.Client do
 
   end
 
+  def handle_call({:setUserName, userName}, _from, state) do
+    {_, engine} = state
+    state = {userName, engine}
+    {:reply, userName, state}
+  end
+
+
+  def handle_cast({:setEngine, engine}, state) do
+    {userName,_} = state
+    state = {userName, engine}
+    {:noreply, state}
+  end
+
   def start_node() do
     {:ok, pid} = GenServer.start_link(__MODULE__, :ok, [])
     pid
@@ -90,7 +103,7 @@ defmodule Twitter.Client do
 
   def init(:ok) do
   # {hashId, neighborMap} , {hashId, neighborMap}
-  {:ok, 0}
+  {:ok, {0, []}}
   end
 
 

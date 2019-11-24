@@ -6,11 +6,11 @@ defmodule Twitter.Simulator do
   users = :ets.new(:users, [:named_table,:public])
 
 
-  :ets.insert_new(users, {"user1", ["pwd_user1","user1@mail.com","1"]})
-  :ets.insert_new(users, {"user2", ["pwd_user2","user2@mail.com","0"]})
-  :ets.insert_new(users, {"user3", ["pwd_user3","user3@mail.com","0"]})
-  :ets.insert_new(users, {"user4", ["pwd_user4","user4@mail.com","0"]})
-  :ets.insert_new(users, {"user5", ["pwd_user5","user5@mail.com","0"]})
+  :ets.insert_new(users, {"user1", ["pwd_user1","user1@mail.com",1]})
+  :ets.insert_new(users, {"user2", ["pwd_user2","user2@mail.com",0]})
+  :ets.insert_new(users, {"user3", ["pwd_user3","user3@mail.com",0]})
+  :ets.insert_new(users, {"user4", ["pwd_user4","user4@mail.com",0]})
+  :ets.insert_new(users, {"user5", ["pwd_user5","user5@mail.com",0]})
 
   tweets = :ets.new(:tweets, [:named_table,:public])
 
