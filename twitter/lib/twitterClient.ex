@@ -24,8 +24,10 @@ defmodule Twitter.Client do
     end
 
 
-    def tweet(userName, tweetData, subscribers, users) do
+    def tweet(userName, tweetData, subscribers, users, tableSize, tweets, hashTagTweetMap, mentionUserMap) do
         Twitter.Client.send(userName, tweetData, subscribers, users)
+        tweetId = Twitter.Helper.addTweet(tweetData,tweets,tableSize)
+        Twitter.Helper.readTweet(tweets,tweetId, hashTagTweetMap, users, mentionUserMap)
     end
 
     def reTweet(userName, tweetData, subscribers, users) do
@@ -42,6 +44,34 @@ defmodule Twitter.Client do
 
   def validateUser(userName, users) do
     validateUser(readValue(:ets.lookup(users, userName)))
+  end
+
+  def register(username,password,email,users) do
+    #IO.inspect :ets.first(users)
+    #IO.inspect :ets.lookup(users, "user5")
+    :ets.insert_new(users, {username, [username,password,email]})
+  end
+
+  def delete(users,username) do
+   :ets.delete(:users, username)
+  end
+
+  def queryHashTags(hashTag, hashTagTweetMap, tweets) do
+    [{_, currentList}] = :ets.lookup(hashTagTweetMap, hashTag)
+    Enum.map(currentList, fn ni ->
+           IO.inspect ni
+           [{_, tweet}] = :ets.lookup(tweets,ni)
+           IO.inspect tweet
+          end)
+  end
+
+  def queryMentions(userId, mentionUserMap, tweets) do
+    [{_, currentList}] = :ets.lookup(mentionUserMap, userId)
+    Enum.map(currentList, fn ni ->
+           IO.inspect ni
+           [{_, tweet}] = :ets.lookup(tweets,ni)
+           IO.inspect tweet
+          end)
   end
 
   def login(userName, password, users) do

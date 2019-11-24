@@ -12,7 +12,8 @@ def readValue([{_,list}]) do
 end
 
 def getSubscribers(userId, subscribers) do
-  :ets.lookup(subscribers, userId)
+ [{_, userSubscribers}] = :ets.lookup(subscribers, userId)
+ userSubscribers
 end
 
 def sendTweet(userId, tweet) do
@@ -53,41 +54,9 @@ def updateTweetUserMap(userId, tweetId, tweetUserMap) do
 
 end
 
-def updateMentionsUserMap(userId, tweetId, mentionUserMap) do
+def updateMentionsUserMap(mention, tweetId, mentionUserMap, users) do
  #IO.inspect :ets.lookup(subscribers, userId2)
-  [{_, userMentions}] = :ets.lookup(mentionUserMap, userId)
-  userMentions = userMentions ++ [tweetId]
-  :ets.insert(userMentions, {userId, userMentions})
-
-end
-
-def updateMentionsUserMap(hash, tweetId, hashTagTweetMap) do
- #IO.inspect :ets.lookup(subscribers, userId2)
-  [{_, hashTagTweets}] = :ets.lookup(hashTagTweetMap, hash)
-  hashTagTweets = hashTagTweets ++ [tweetId]
-  :ets.insert(hashTagTweets, {hash, hashTagTweets})
-
-end
-
-def readTweet(tweets,tweetId, hashTagTweetMap, users, mentionUserMap) do
-[{_, tweet}] = :ets.lookup(tweets, tweetId)
-  #IO.inspect tweet
-  #IO.inspect String.contains? tweet, "@"
-  #IO.inspect String.contains? tweet, "#"
-
- if String.contains? tweet, "@" do
- tweetSplitMention = String.split(tweet, "@")
- #IO.inspect tweetSplitMention
- {_,tweetSplit1} = Enum.fetch(tweetSplitMention, 1)
- #IO.inspect tweetSplit1
- tweetMention = String.split(tweetSplit1, " ")
-#tweetMention = Enum.fetch(tweetSplit1, 1)
- #IO.inspect Enum.fetch(tweetSplit, 1)
- #IO.inspect tweetMention
- {_,mention} = Enum.fetch(tweetMention, 0)
- #mention = "@" <> "" <> mention
- #IO.inspect mention
- if readValue(:ets.lookup(users, mention)) do
+   if readValue(:ets.lookup(users, mention)) do
     #"valid user"
 
     if readValue(:ets.lookup(mentionUserMap, mention)) do
@@ -113,6 +82,44 @@ def readTweet(tweets,tweetId, hashTagTweetMap, users, mentionUserMap) do
     # "non existing user"
  end
  end
+
+
+
+def updateHashTagTweetMap(hash, tweetId, hashTagTweetMap) do
+ #IO.inspect :ets.lookup(subscribers, userId2)
+  if readValue(:ets.lookup(hashTagTweetMap, hash)) do
+    #IO.inspect "present"
+    hashTagTweets = readValue(:ets.lookup(hashTagTweetMap, hash))
+    hashTagTweets = hashTagTweets ++ [tweetId]
+    :ets.insert(hashTagTweetMap, {hash, hashTagTweets})
+ else
+    #IO.inspect "new entry"
+    :ets.insert(hashTagTweetMap, {hash, [tweetId]})
+ end
+
+end
+
+def readTweet(tweets,tweetId, hashTagTweetMap, users, mentionUserMap) do
+[{_, tweet}] = :ets.lookup(tweets, tweetId)
+  #IO.inspect tweet
+  #IO.inspect String.contains? tweet, "@"
+  #IO.inspect String.contains? tweet, "#"
+
+ if String.contains? tweet, "@" do
+ tweetSplitMention = String.split(tweet, "@")
+ #IO.inspect tweetSplitMention
+ {_,tweetSplit1} = Enum.fetch(tweetSplitMention, 1)
+ #IO.inspect tweetSplit1
+ tweetMention = String.split(tweetSplit1, " ")
+#tweetMention = Enum.fetch(tweetSplit1, 1)
+ #IO.inspect Enum.fetch(tweetSplit, 1)
+ #IO.inspect tweetMention
+ {_,mention} = Enum.fetch(tweetMention, 0)
+ #mention = "@" <> "" <> mention
+ #IO.inspect mention
+ Twitter.Helper.updateMentionsUserMap(mention, tweetId, mentionUserMap, users)
+ end
+
  if String.contains? tweet, "#" do
  tweetSplitHash = String.split(tweet, "#")
  #IO.inspect tweetSplitHash
@@ -124,17 +131,10 @@ def readTweet(tweets,tweetId, hashTagTweetMap, users, mentionUserMap) do
  #IO.inspect tweetHash
  {_,hash} = Enum.fetch(tweetHash, 0)
  hash = "#" <> "" <> hash
- IO.inspect hash
- IO.inspect :ets.lookup(hashTagTweetMap, hash)
- if readValue(:ets.lookup(hashTagTweetMap, hash)) do
-    #IO.inspect "present"
-    hashTagTweets = readValue(:ets.lookup(hashTagTweetMap, hash))
-    hashTagTweets = hashTagTweets ++ [tweetId]
-    :ets.insert(hashTagTweetMap, {hash, hashTagTweets})
- else
-    #IO.inspect "new entry"
-    :ets.insert(hashTagTweetMap, {hash, [tweetId]})
- end
+
+# IO.inspect hash
+# IO.inspect :ets.lookup(hashTagTweetMap, hash)
+Twitter.Helper.updateHashTagTweetMap(hash, tweetId, hashTagTweetMap)
  end
 end
 

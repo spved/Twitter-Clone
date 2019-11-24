@@ -1,31 +1,5 @@
 defmodule Twitter.Simulator do
-  def register(username,password,email,users) do
-    #IO.inspect :ets.first(users)
-    #IO.inspect :ets.lookup(users, "user5")
-    :ets.insert_new(users, {"user6", [username,password,email]})
-  end
-
-  def delete(users,username) do
-   :ets.delete(:users, username)
-  end
-
-  def queryHashTags(hashTag, hashTagTweetMap, tweets) do
-    [{_, currentList}] = :ets.lookup(hashTagTweetMap, hashTag)
-    Enum.map(currentList, fn ni ->
-           IO.inspect ni
-           [{_, tweet}] = :ets.lookup(tweets,ni)
-           IO.inspect tweet
-          end)
-  end
-
-  def queryMentions(userId, mentionUserMap, tweets) do
-    [{_, currentList}] = :ets.lookup(mentionUserMap, userId)
-    Enum.map(currentList, fn ni ->
-           IO.inspect ni
-           [{_, tweet}] = :ets.lookup(tweets,ni)
-           IO.inspect tweet
-          end)
-  end
+  
 
   def main(args) do
 
@@ -95,32 +69,32 @@ defmodule Twitter.Simulator do
   :ets.insert_new(tableSize, {"users", 5})
   :ets.insert_new(tableSize, {"tweets", 5})
 
-   [{_, currentList}] = :ets.lookup(hashTagTweetMap, "#Concurrency")
+   #[{_, currentList}] = :ets.lookup(hashTagTweetMap, "#Concurrency")
   #IO.inspect currentList
 
     #IO.inspect length(users)
     #IO.inspect :ets.lookup(users, "user2")
-   register("user6","pwd_user6","user6@gmail.com",users)
+   #register("user6","pwd_user6","user6@gmail.com",users)
    #IO.inspect :ets.lookup(users, "user6")
 
    #Twitter.register("user6","pwd_user6","user6@gmail.com",users)
    #IO.inspect :ets.lookup(users, "user6")
 
    #Twitter.tweet("user3", "tweet1", subscribers)
-   Twitter.Client.querySubscribedTo("user3",subscribers,tweetUserMap,tweets)
+   #Twitter.Client.querySubscribedTo("user3",subscribers,tweetUserMap,tweets)
    #Twitter.Client.querySubscribedTo("user6",subscribers,tweetUserMap, tweets)
 
-   Twitter.Client.isLogin("user3", users)
-   Twitter.Client.isLogin("user7", users)
-   Twitter.Client.login("user4", "pwd_uer4", users)
-   Twitter.Client.login("user4", "pwd_user4", users)
-   Twitter.Client.login("user7", "pwd_uer4", users)
+   #Twitter.Client.isLogin("user3", users)
+   #Twitter.Client.isLogin("user7", users)
+   #Twitter.Client.login("user4", "pwd_uer4", users)
+   #Twitter.Client.login("user4", "pwd_user4", users)
+   #Twitter.Client.login("user7", "pwd_uer4", users)
 
-   Twitter.Client.tweet("user3", "Got the first tweet #hiveFive", subscribers, users)
-   Twitter.Client.reTweet("user5", "Got the first tweet #hiveFive", subscribers, users)
+   #Twitter.Client.tweet("user3", "Got the first tweet #hiveFive", subscribers, users)
+   #Twitter.Client.reTweet("user5", "Got the first tweet #hiveFive", subscribers, users)
 
-   Twitter.Client.logout("user4", users)
-   Twitter.Client.tweet("user3", "Got the second tweet #hiveFive", subscribers, users)
+   #Twitter.Client.logout("user4", users)
+   #Twitter.Client.tweet("user3", "Got the second tweet #hiveFive", subscribers, users)
 
    #Twitter.queryMentions("user2", mentionUserMap, tweets)
 
@@ -135,24 +109,42 @@ defmodule Twitter.Simulator do
    #IO.inspect :ets.lookup(subscribers, "user2")
    #IO.inspect :ets.lookup(subscribedTo, "user4")
 
-   IO.inspect :ets.lookup(tweetUserMap, "user3")
+   #IO.inspect :ets.lookup(tweetUserMap, "user3")
 
   #Twitter.Helper.updateTweetUserMap("user3", "T10", tweetUserMap)
 
-  IO.inspect :ets.lookup(tweetUserMap, "user3")
+  #IO.inspect :ets.lookup(tweetUserMap, "user3")
 
-  IO.inspect "size"
-  Twitter.Helper.addTweet("tweets @user3 #UF",tweets, tableSize)
+  #IO.inspect "size"
+  #Twitter.Helper.addTweet("tweets @user3 #UF",tweets, tableSize)
 
   #IO.inspect :ets.lookup(tweets, "T6")
   #IO.inspect "before"
-  IO.inspect :ets.lookup(mentionUserMap, "user3")
+  #IO.inspect :ets.lookup(mentionUserMap, "user3")
 
-  Twitter.Helper.readTweet(tweets,"T6",hashTagTweetMap, users, mentionUserMap)
+  #Twitter.Helper.readTweet(tweets,"T6",hashTagTweetMap, users, mentionUserMap)
 
   #IO.inspect "after"
-  IO.inspect :ets.lookup(mentionUserMap, "user3")
+  #IO.inspect :ets.lookup(mentionUserMap, "user3")
   #IO.inspect :ets.lookup(hashTagTweetMap, "#UF")
+
+  #Testing all the main functions
+
+  # Register
+  #IO.inspect "Before Register"
+
+  
+
+  #Twitter.Client.register("user6","user6_pwd","user6@email.com",users, tableSize)
+
+  #IO.inspect "Before Register"
+
+
+
+
+
+
+
    end
 
 end
