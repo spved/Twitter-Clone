@@ -19,21 +19,6 @@ def tweet(userId, tweetData, subscribers) do
         end)
 end
 
-def querySubscribedTo(userId, subscribers, tweetUserMap) do
-  [{_, currentList}] = TwitterHelper.getSubscribers(userId, subscribers)
-   #[{_, currentList}] = :ets.lookup(subscribers, userId)
-  # IO.inspect currentList
-    Enum.map(currentList, fn ni ->
-         IO.inspect ni
-          [{_, tweetList}] = :ets.lookup(tweetUserMap, ni)
-           Enum.map(tweetList, fn n ->
-            IO.inspect n
-           end)
-         #IO.inspect tweetList
-         #Twitter.send(ni,tweetData)
-        end)
-end
-
 def queryHashTags(hashTag, hashTagTweetMap, tweets) do
   [{_, currentList}] = :ets.lookup(hashTagTweetMap, hashTag)
   Enum.map(currentList, fn ni ->
@@ -120,16 +105,14 @@ hashTagTweetMap = :ets.new(:hashTagTweetMap, [:named_table,:public])
 :ets.insert_new(hashTagTweetMap, {"#Elixir", ["T2"]})
 :ets.insert_new(hashTagTweetMap, {"#Scala", ["T2"]})
 
-
 tableSize = :ets.new(:tableSize, [:named_table,:public])
 
 :ets.insert_new(tableSize, {"users", 5})
 :ets.insert_new(tableSize, {"tweets", 5})
 
- 
  #[{_, currentList}] = :ets.lookup(hashTagTweetMap, "#Concurrency")
 #IO.inspect currentList
- 
+
   #IO.inspect length(users)
   #IO.inspect :ets.lookup(users, "user2")
 
@@ -137,9 +120,7 @@ tableSize = :ets.new(:tableSize, [:named_table,:public])
  #IO.inspect :ets.lookup(users, "user6")
 
  #Twitter.tweet("3", "tweet1", subscribers)
- #Twitter.querySubscribedTo("user3",subscribers,tweetUserMap)
-
- #Twitter.queryHashTags("#DOS",hashTagTweetMap, tweets)
+ Twitter.Client.querySubscribedTo("3",subscribers,tweetUserMap)
 
  #Twitter.queryMentions("user2", mentionUserMap, tweets)
  
