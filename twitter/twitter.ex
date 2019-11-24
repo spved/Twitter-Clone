@@ -8,16 +8,17 @@ defmodule Twitter do
       numUsers = Enum.at(args, 0) |> String.to_integer()
       numTweets = Enum.at(args, 1) |> String.to_integer()
 
-    engine = Twitter.Engine.start_node()
-    IO.inspect engine
+      engine = Twitter.Engine.start_node()
+      IO.inspect engine
 
-    clients =  Enum.map(1..numUsers, fn _ ->
-          pid = Twitter.Client2.start_node()
-          pid
-        end)
-        IO.inspect clients
+      clients =  Enum.map(1..numUsers, fn _ ->
+            pid = Twitter.Client.start_node()
+            pid
+          end)
+          IO.inspect clients
 
-    Twitter.Simulator.main(args)
+      Twitter.Simulator.simulate(numUsers, numTweets, clients, engine)
+    end
   end
 end
 Twitter.main(System.argv())

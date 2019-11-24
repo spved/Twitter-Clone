@@ -1,7 +1,7 @@
 defmodule Twitter.Simulator do
-  
 
-  def main(args) do
+
+  def simulate(numUsers, numTweets, clients, engine) do
 
   users = :ets.new(:users, [:named_table,:public])
 
@@ -133,18 +133,11 @@ defmodule Twitter.Simulator do
   # Register
   #IO.inspect "Before Register"
 
-  
+
 
   #Twitter.Client.register("user6","user6_pwd","user6@email.com",users, tableSize)
 
   #IO.inspect "Before Register"
 
-
-
-
-
-
-
    end
-
 end

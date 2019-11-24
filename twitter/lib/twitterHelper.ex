@@ -1,13 +1,11 @@
 defmodule Twitter.Helper do
 
 def readValue([]) do
-end
-
-def readValue([{_,[]}]) do
   []
 end
 
-def readValue([{_,list}]) do
+def readValue(data) do
+  [{ _ , list}] = data
   list
 end
 
@@ -17,23 +15,41 @@ def getSubscribers(userId, subscribers) do
 end
 
 def sendTweet(userId, tweet) do
-  
-end
-
-def subscribe(userId1, userId2, subscribedTo, subscribers) do
-  #userId1 is subscribing to userId2
-  IO.inspect :ets.lookup(subscribers, userId2)
-  [{_, user2Subscribers}] = :ets.lookup(subscribers, userId2)
-  user2Subscribers = user2Subscribers ++ [userId1]
-  :ets.insert(subscribers, {userId2, user2Subscribers})
-  #:ets.update_counter(subscribers, userId2, user2Subscribers )
-
-  [{_, user1SubscribedTo}] = :ets.lookup(subscribedTo, userId1)
-  user1SubscribedTo = user1SubscribedTo ++ [userId2]
-  :ets.insert(subscribedTo, {userId1, user2Subscribers})
- #:ets.update_counter(subscribedTo, userId1, user2Subscribers )
 
 end
+
+def validateUser([]) do
+  false
+end
+def validateUser(_) do
+  true
+end
+
+def validateUser(userName, users) do
+  validateUser(readValue(:ets.lookup(users, userName)))
+end
+
+def login(userName, password, users) do
+  if validateUser(userName, users) do
+    list = readValue(:ets.lookup(users, userName))
+    userPassword = List.first(list)
+    if userPassword == password do
+      :ets.insert(users, {userName, List.replace_at(list, 2, "1")})
+    end
+  end
+end
+
+def logout(userName, users) do
+  if validateUser(userName, users) do
+    list = readValue(:ets.lookup(users, userName))
+    :ets.insert(users, {userName, List.replace_at(list, 2, "0")})
+  end
+end
+
+def isLogin(userName, users) do
+  List.last(readValue(:ets.lookup(users, userName)))
+end
+
 
 def addTweet(tweet,tweets,tableSize) do
 [{_, size}] = :ets.lookup(tableSize, "tweets")
@@ -62,9 +78,9 @@ def updateMentionsUserMap(mention, tweetId, mentionUserMap, users) do
     if readValue(:ets.lookup(mentionUserMap, mention)) do
        # "user was mentioned before"
     userMentions = readValue(:ets.lookup(mentionUserMap, mention))
-    
+
     #IO.inspect "userMentions"
-    
+
     #IO.inspect userMentions
     userMentions = userMentions ++ [tweetId]
 
@@ -139,4 +155,3 @@ Twitter.Helper.updateHashTagTweetMap(hash, tweetId, hashTagTweetMap)
 end
 
 end
-
