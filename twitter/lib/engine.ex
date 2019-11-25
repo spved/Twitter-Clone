@@ -3,12 +3,37 @@ defmodule Twitter.Engine do
 
   #all set functions are cast and all get funtions are call
 
-  def handle_cast({:send, userName, tweet, subscribers, users}, state) do
-    currentList = Twitter.Helper.readValue(:ets.lookup(subscribers, userName))
+  def handle_cast({:send, userName, tweet}, state) do
+    {users,_,subscribers,_,_,_,_,_} = state
+    currentList = GenServer.call(self(),{:getSubscribers, userName})
      #for each subscriber get tweets
     Enum.map(currentList, fn ni ->
-       Twitter.Client.receive(ni, userName, tweet, users)
+      pid = List.first(Twitter.Helper.readValue(:ets.lookup(users, userName)))
+      Genserver.cast(pid, {:receive, ni, userName, tweet})
     end)
+    {:noreply, state}
+  end
+
+  #login/logout
+  def handle_call({:login,userName, password}, _from, state) do
+    {users,_,_,_,_,_,_,_} = state
+    if Twitter.Helper.validateUser(userName, users) do
+      list = Twitter.Helper.readValue(:ets.lookup(users, userName))
+      userPassword = List.first(list)
+      if userPassword == password do
+        :ets.insert(users, {userName, List.replace_at(list, 2, 1)})
+      end
+    end
+    {:reply, :ok, state}
+  end
+
+  def handle_call({:logout, userName}, _from, state) do
+    {users,_,_,_,_,_,_,_} = state
+    if Twitter.Helper.validateUser(userName, users) do
+      list = Twitter.Hlper.readValue(:ets.lookup(users, userName))
+      :ets.insert(users, {userName, List.replace_at(list, 2, 0)})
+    end
+    {:reply,:ok, state}
   end
 
   #users table get, set, unset
@@ -24,6 +49,12 @@ defmodule Twitter.Engine do
     {:noreply, state}
   end
 
+  def handle_call({:getUser, userName}, _from, state) do
+    {users,_,_,_,_,_,_,_} = state
+      list = Twitter.Helper.readValue(:ets.lookup(users, userName))
+    {:reply,list, state}
+  end
+
   #insert and get tweet
   def handle_call({:getTweet, tweetId}, _from, state) do
     {_,tweets,_,_,_,_,_,_} = state
@@ -31,11 +62,11 @@ defmodule Twitter.Engine do
     {:reply, tweet, state}
   end
 
-  def handle_call({:addTweet, tweet}, _from, state) do
+  def handle_cast({:addTweet, tweet}, state) do
     {_,tweets,_,_,_,_,_,tableSize} = state
     id = :ets.update_counter(tableSize, "tweets", {2,1})
     :ets.insert_new(tweets, {id, tweet})
-    {:reply, id, state}
+    {:noreply, state}
   end
 
   #subscribers table insert_new, insert, get
