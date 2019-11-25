@@ -36,7 +36,7 @@ defmodule Twitter.Client do
     def handle_cast({:tweet,userName, tweetData, subscribers, users, tableSize, tweets, hashTagTweetMap, mentionUserMap}, state) do
         {_,engine} = state
         Genserver.cast(engine, {:send, userName, tweetData, subscribers, users})
-        {_,tweetId,_} = Genserver.call(engine,{:addTweet,tweetData}) 
+        {_,tweetId,_} = Genserver.call(engine,{:addTweet,tweetData})
         #def handle_cast({:send, self(), tweet, subscribers, users}, state) do
         #Twitter.Client.send(userName, tweetData, subscribers, users)
         #def handle_cast({:addTweetsToUser, user, tweetId}, state) do
@@ -52,7 +52,7 @@ defmodule Twitter.Client do
         #Twitter.Client.send(userName, tweetData, subscribers, users)
     end
 #helper functions
- 
+
 
   def handle_call({:queryHashTags, hashTag, hashTagTweetMap, tweets}, _from, state) do
     currentList = Twitter.Helper.readValue(:ets.lookup(hashTagTweetMap, hashTag))
@@ -72,8 +72,9 @@ defmodule Twitter.Client do
           end)
   end
 
-  def handle_call({:receive, userName, tweetUser, tweet, users}, _from, state) do
-    if Twitter.Helper.isLogin(userName, users) == 1 do
+  def handle_call({:receive, userName, tweetUser, tweet}, _from, state) do
+    {_, engine} = state
+    if Twitter.Helper.isLogin(userName, engine) == 1 do
       IO.inspect [tweetUser,tweet], label: userName
     end
   end
