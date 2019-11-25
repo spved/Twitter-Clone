@@ -12,7 +12,13 @@ defmodule Twitter.Engine do
   end
 
   #users table get, set, unset
+
+  def insertUser(engine, pid, user, passwd, email) do
+   Genserver.cast(engine, {:insertUser, pid, user, passwd, email})
+  end
+
   def handle_cast({:insertUser, pid, user, passwd, email}, state) do
+    IO.inspect "came here"
     {users,_,_,_,_,_,_,_} = state
     :ets.insert_new(users, {user, [pid, passwd,email,0]})
     {:noreply, state}
@@ -143,6 +149,13 @@ defmodule Twitter.Engine do
     state = {users, tweets, subscribers, subscribedTo, tweetUserMap, mentionUserMap, hashTagTweetMap, tableSize}
     {:reply, :ok, state}
   end
+
+   #Functions for testing simulator
+   def handle_call({:getUserTable}, _from, state) do
+     {users,_,_,_,_,_,_,_} = state
+     IO.inspect :ets.lookup(:users, "user2")
+     {:reply, :ok, users}
+   end
 
   def start_node() do
     {:ok, pid} = GenServer.start_link(__MODULE__, :ok, [])

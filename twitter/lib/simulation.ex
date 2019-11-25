@@ -70,17 +70,20 @@ defmodule Twitter.Simulator do
   :ets.insert_new(tableSize_table, {"users", 5})
   :ets.insert_new(tableSize_table, {"tweets", 5})
 
+
+  #Register all the users
   IO.inspect "Registering users"
           Enum.each(Enum.with_index(clients), fn({x, i}) ->
-            #IO.inspect x
-            #IO.inspect i
-            user = "user" <> "" <> Integer.to_string(i+1)
-            #IO.inspect user
-            pwd = "pwd" <> "" <> Integer.to_string(i+1)
-            mail = "user" <> "" <> Integer.to_string(i+1) <> "@email.com"
-            #"user"<>""<> x,"pwd"<>""<>x,"user"<>x<>""<>"@email.com"
+            user = Twitter.Simulator.Helper.generateUserId(i)
+            pwd = Twitter.Simulator.Helper.generatePassword(i)
+            mail = Twitter.Simulator.Helper.generateMail(i)
             GenServer.cast(x, {:register, user, pwd, mail})
           end)
+
+# {_,_,users} = 
+# GenServer.call(engine,{:getUserTable})
+
+ 
 
    #[{_, currentList}] = :ets.lookup(hashTagTweetMap, "#Concurrency")
   #IO.inspect currentList
@@ -152,5 +155,10 @@ defmodule Twitter.Simulator do
 
   #IO.inspect "Before Register"
 
+    infinite()
+   end
+
+   def infinite() do
+    infinite()
    end
 end

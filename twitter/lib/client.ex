@@ -6,8 +6,10 @@ defmodule Twitter.Client do
       #IO.inspect :ets.lookup(users, "user5")
       {_,engine} = state
       #:ets.insert_new(users, {username, [password,email,0]})
-      Genserver.cast(engine, {:insertUser, self(), username, password, email})
+      Twitter.Engine.insertUser(engine,self(), username, password, email)
+      #Genserver.cast(engine, {:insertUser, self(), username, password, email})
       state = {username, engine}
+      {:noreply, state}
   end
 
    def handle_cast({:delete,users,username}, state) do
@@ -97,7 +99,7 @@ defmodule Twitter.Client do
    #:ets.update_counter(subscribedTo, userId1, user2Subscribers )
 
   end
-
+  
   def handle_call({:setUserName, userName}, _from, state) do
     {_, engine} = state
     state = {userName, engine}
