@@ -186,11 +186,13 @@ defmodule Twitter.Engine do
   end
 
    #Functions for testing simulator
-   def handle_call({:getUserTable}, _from, state) do
-     {users,_,_,_,_,_,_,_} = state
-     IO.inspect :ets.lookup(:users, "user2")
-     {:reply, :ok, users}
-   end
+   
+   def handle_cast({:getUserTable, userName}, state) do
+    {users,_,_,_,_,_,_,_} = state
+    #IO.inspect pid
+    IO.inspect :ets.lookup(:users, userName), label: "userDetails"
+    {:noreply, state}
+  end
 
   def start_node() do
     {:ok, pid} = GenServer.start_link(__MODULE__, :ok, [])

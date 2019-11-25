@@ -12,27 +12,35 @@ defmodule Twitter.Client do
       {:noreply, state}
   end
 
-   def handle_cast({:delete,username}, state) do
-     {_,engine} = state
-     GenServer.cast(engine, {:deleteUser, self()})
+   def handle_cast({:delete,user}, state) do
+   
+     {userName,engine} = state
+     GenServer.cast(engine, {:deleteUser, userName})
      #:ets.delete(:users, username)
-     state = {username, engine}
+     state = {userName, engine}
+     {:noreply, state}
     end
 
-  def handle_call({:querySubscribedTo, userId, subscribers, tweetUserMap, tweets}, _from, state) do
-   currentList = Twitter.Helper.readValue(:ets.lookup(subscribers, userId))
+  def handle_call({:querySubscribedTo, userId}, _from, state) do
+  {userName,engine} = state
+   currentList = GenServer.call(engine,{:getSubscribers, userName})
+  
+  #currentList = Twitter.Helper.readValue(:ets.lookup(subscribers, userId))
     #for each subscriber get tweets
     subscribedTweets = List.flatten(Enum.map(currentList, fn ni ->
-         #IO.inspect ni
-          tweetList = Twitter.Helper.readValue(:ets.lookup(tweetUserMap, ni))
+         IO.inspect ni
+          tweetList = Twitter.Helper.readValue(GenServer.call(engine,{:getTweetsOfUser, ni}))
+       #   tweetList = Twitter.Helper.readValue(:ets.lookup(tweetUserMap, ni))
            #get tweets for each tweet id
            stweets = Enum.map(tweetList, fn n ->
-            stweet = Twitter.Helper.readValue(:ets.lookup(tweets, n))
+             stweet = GenServer.call({:getTweet, n})
+       #     stweet = Twitter.Helper.readValue(:ets.lookup(tweets, n))
             stweet
-           end)
+          end)
        end))
        IO.inspect subscribedTweets
        subscribedTweets
+       {:reply, subscribedTweets, state}
     end
 
     def handle_cast({:tweet,userName, tweetData, subscribers, users, tableSize, tweets, hashTagTweetMap, mentionUserMap}, state) do
@@ -57,19 +65,25 @@ defmodule Twitter.Client do
 
 
   def handle_call({:queryHashTags, hashTag, hashTagTweetMap, tweets}, _from, state) do
-    currentList = Twitter.Helper.readValue(:ets.lookup(hashTagTweetMap, hashTag))
+    {userName,engine} = state
+     currentList = Twitter.Helper.readValue(GenServer.call(engine,{:getHashTagTweets, hashTag})) 
+  #  currentList = Twitter.Helper.readValue(:ets.lookup(hashTagTweetMap, hashTag))
     Enum.map(currentList, fn ni ->
            IO.inspect ni
-           tweet = Twitter.Helper.readValue(:ets.lookup(tweets,ni))
+          #tweet = Twitter.Helper.readValue(:ets.lookup(tweets,ni))
+           tweet = Twitter.Helper.readValue(GenServer.call(engine,{:getTweet, ni}))
            IO.inspect tweet
           end)
   end
 
   def handle_call({:queryMentions, userId, mentionUserMap, tweets}, _from, state) do
-    currentList = Twitter.Helper.readValue(:ets.lookup(mentionUserMap, userId))
+  {userName,engine} = state
+  currentList = Twitter.Helper.readValue(GenServer.call(engine,{:getMentionedTweets, userName})) 
+   # currentList = Twitter.Helper.readValue(:ets.lookup(mentionUserMap, userId))
     Enum.map(currentList, fn ni ->
            IO.inspect ni
-           tweet = Twitter.Helper.readValue(:ets.lookup(tweets,ni))
+           tweet = Twitter.Helper.readValue(GenServer.call(engine,{:getTweet, ni}))
+           #tweet = Twitter.Helper.readValue(:ets.lookup(tweets,ni))
            IO.inspect tweet
           end)
   end
@@ -101,6 +115,16 @@ defmodule Twitter.Client do
 
   end
   
+  # testing functions
+
+   def handle_cast({:getUserTable, pid}, state) do
+    {userName,engine} = state
+    #{users,_,_,_,_,_,_,_} = state
+    GenServer.cast(engine, {:getUserTable, userName})
+    #IO.inspect :ets.lookup(:users, pid)
+    {:noreply, state}
+  end
+
   def handle_call({:setUserName, userName}, _from, state) do
     {_, engine} = state
     state = {userName, engine}
