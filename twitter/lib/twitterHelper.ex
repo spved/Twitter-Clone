@@ -9,11 +9,6 @@ def readValue(data) do
   list
 end
 
-def getSubscribers(userId, subscribers) do
- [{_, userSubscribers}] = :ets.lookup(subscribers, userId)
- userSubscribers
-end
-
 def validateUser([]) do
   false
 end
@@ -25,25 +20,8 @@ def validateUser(userName, users) do
   validateUser(readValue(:ets.lookup(users, userName)))
 end
 
-def login(userName, password, users) do
-  if validateUser(userName, users) do
-    list = readValue(:ets.lookup(users, userName))
-    userPassword = List.first(list)
-    if userPassword == password do
-      :ets.insert(users, {userName, List.replace_at(list, 2, 1)})
-    end
-  end
-end
-
-def logout(userName, users) do
-  if validateUser(userName, users) do
-    list = readValue(:ets.lookup(users, userName))
-    :ets.insert(users, {userName, List.replace_at(list, 2, 0)})
-  end
-end
-
-def isLogin(userName, users) do
-  List.last(readValue(:ets.lookup(users, userName)))
+def isLogin(userName, engine) do
+  List.last(GenServer.call(engine,{:getUser, userName}))
 end
 
 
