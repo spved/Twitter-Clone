@@ -19,7 +19,10 @@ defmodule Twitter do
           end)
           IO.inspect clients
 
-      #Twitter.Simulator.simulate(numUsers, numTweets, clients, engine)
+          
+          
+
+      Twitter.Simulator.simulate(numUsers, numTweets, clients, engine)
     end
   end
 

@@ -9,11 +9,14 @@ defmodule Twitter.Client do
       state = {username, engine}
   end
 
-    def delete(users,username) do
-     :ets.delete(:users, username)
+   def handle_cast({:delete,users,username}, state) do
+     {_,engine} = state
+     Genserver.cast(engine, {:deleteUser, self()})
+     #:ets.delete(:users, username)
+     state = {username, engine}
     end
 
-  def querySubscribedTo(userId, subscribers, tweetUserMap, tweets) do
+  def handle_call({:querySubscribedTo, userId, subscribers, tweetUserMap, tweets}, _from, state) do
    currentList = Twitter.Helper.readValue(:ets.lookup(subscribers, userId))
     #for each subscriber get tweets
     subscribedTweets = List.flatten(Enum.map(currentList, fn ni ->
@@ -29,21 +32,28 @@ defmodule Twitter.Client do
        subscribedTweets
     end
 
-
-    def tweet(userName, tweetData, subscribers, users, tableSize, tweets, hashTagTweetMap, mentionUserMap) do
-        Twitter.Client.send(userName, tweetData, subscribers, users)
-        tweetId = Twitter.Helper.addTweet(tweetData,tweets,tableSize)
+    def handle_cast({:tweet,userName, tweetData, subscribers, users, tableSize, tweets, hashTagTweetMap, mentionUserMap}, state) do
+        {_,engine} = state
+        Genserver.cast(engine, {:send, userName, tweetData, subscribers, users})
+        {_,tweetId,_} = Genserver.call(engine,{:addTweet,tweetData}) 
+        #def handle_cast({:send, self(), tweet, subscribers, users}, state) do
+        #Twitter.Client.send(userName, tweetData, subscribers, users)
+        #def handle_cast({:addTweetsToUser, user, tweetId}, state) do
+        Genserver.cast(engine, {:addTweetsToUser, userName, tweetId})
+        #tweetId = Twitter.Helper.addTweet(tweetData,tweets,tableSize)
         Twitter.Helper.readTweet(tweets,tweetId, hashTagTweetMap, users, mentionUserMap)
     end
 
-    def reTweet(userName, tweetData, subscribers, users) do
-        Twitter.Client.send(userName, tweetData, subscribers, users)
+    def handle_cast({:reTweet,userName, tweetData, subscribers, users}, state) do
+        {_,engine} = state
+        #def handle_cast({:send, userName, tweet, subscribers, users}, state) do
+        Genserver.cast(engine,{:send, userName, tweetData, subscribers, users})
+        #Twitter.Client.send(userName, tweetData, subscribers, users)
     end
 #helper functions
+ 
 
-
-
-  def queryHashTags(hashTag, hashTagTweetMap, tweets) do
+  def handle_call({:queryHashTags, hashTag, hashTagTweetMap, tweets}, _from, state) do
     currentList = Twitter.Helper.readValue(:ets.lookup(hashTagTweetMap, hashTag))
     Enum.map(currentList, fn ni ->
            IO.inspect ni
@@ -52,7 +62,7 @@ defmodule Twitter.Client do
           end)
   end
 
-  def queryMentions(userId, mentionUserMap, tweets) do
+  def handle_call({:queryMentions, userId, mentionUserMap, tweets}, _from, state) do
     currentList = Twitter.Helper.readValue(:ets.lookup(mentionUserMap, userId))
     Enum.map(currentList, fn ni ->
            IO.inspect ni
@@ -61,24 +71,28 @@ defmodule Twitter.Client do
           end)
   end
 
-
-  def receive(userName, tweetUser, tweet, users) do
+  def handle_call({:receive, userName, tweetUser, tweet, users}, _from, state) do
     if Twitter.Helper.isLogin(userName, users) == 1 do
       IO.inspect [tweetUser,tweet], label: userName
     end
   end
 
-  def subscribe(userId1, userId2, subscribedTo, subscribers) do
+  def handle_cast({:subscribe,userId1, userId2, subscribedTo, subscribers}, state) do
+    {_,engine} = state
     #userId1 is subscribing to userId2
     IO.inspect :ets.lookup(subscribers, userId2)
     user2Subscribers = Twitter.Helper.readValue(:ets.lookup(subscribers, userId2))
     user2Subscribers = user2Subscribers ++ [userId1]
-    :ets.insert(subscribers, {userId2, user2Subscribers})
+    #def handle_cast({:addSubscriber, user, suser}, state) do
+    #:ets.insert(subscribers, {userId2, user2Subscribers})
+    Genserver.cast(engine,{:addSubscriber, userId2, user2Subscribers})
     #:ets.update_counter(subscribers, userId2, user2Subscribers )
 
     user1SubscribedTo = Twitter.Helper.readValue(:ets.lookup(subscribedTo, userId1))
     user1SubscribedTo = user1SubscribedTo ++ [userId2]
-    :ets.insert(subscribedTo, {userId1, user2Subscribers})
+    #:ets.insert(subscribedTo, {userId1, user2Subscribers})
+    #def handle_cast({:addSubscriberOf, user, suser}, state) do
+    Genserver.cast(engine,{:addSubscriberOf, userId1, user2Subscribers})
    #:ets.update_counter(subscribedTo, userId1, user2Subscribers )
 
   end

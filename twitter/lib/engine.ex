@@ -3,7 +3,7 @@ defmodule Twitter.Engine do
 
   #all set functions are cast and all get funtions are call
 
-  def send(userName, tweet, subscribers, users) do
+  def handle_cast({:send, userName, tweet, subscribers, users}, state) do
     currentList = Twitter.Helper.readValue(:ets.lookup(subscribers, userName))
      #for each subscriber get tweets
     Enum.map(currentList, fn ni ->
@@ -31,11 +31,11 @@ defmodule Twitter.Engine do
     {:reply, tweet, state}
   end
 
-  def handle_cast({:addTweet, tweet}, state) do
+  def handle_call({:addTweet, tweet}, _from, state) do
     {_,tweets,_,_,_,_,_,tableSize} = state
     id = :ets.update_counter(tableSize, "tweets", {2,1})
     :ets.insert_new(tweets, {id, tweet})
-    {:noreply, state}
+    {:reply, id, state}
   end
 
   #subscribers table insert_new, insert, get
