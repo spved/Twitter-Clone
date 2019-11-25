@@ -71,8 +71,15 @@ defmodule Twitter.Simulator do
   :ets.insert_new(tableSize_table, {"tweets", 5})
 
   IO.inspect "Registering users"
-          Enum.each(clients, fn x ->
-            GenServer.cast(x, {:register, "user","pwd","email"})
+          Enum.each(Enum.with_index(clients), fn({x, i}) ->
+            #IO.inspect x
+            #IO.inspect i
+            user = "user" <> "" <> Integer.to_string(i+1)
+            #IO.inspect user
+            pwd = "pwd" <> "" <> Integer.to_string(i+1)
+            mail = "user" <> "" <> Integer.to_string(i+1) <> "@email.com"
+            #"user"<>""<> x,"pwd"<>""<>x,"user"<>x<>""<>"@email.com"
+            GenServer.cast(x, {:register, user, pwd, mail})
           end)
 
    #[{_, currentList}] = :ets.lookup(hashTagTweetMap, "#Concurrency")

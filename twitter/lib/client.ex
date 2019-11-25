@@ -1,6 +1,7 @@
 defmodule Twitter.Client do
   use GenServer
   def handle_cast({:register,username,password,email}, state) do
+      IO.inspect username
       #IO.inspect :ets.first(users)
       #IO.inspect :ets.lookup(users, "user5")
       {_,engine} = state
