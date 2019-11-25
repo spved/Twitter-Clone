@@ -47,7 +47,7 @@ def readTweet(tweets,tweetId, engine) do
  #IO.inspect mention
  #def handle_cast({:addHashTagTweet, hashTag, tweetId}, state) do
  #Twitter.Helper.updateMentionsUserMap(mention, tweetId, mentionUserMap, users)
- Genserver.cast(engine,{:addMentionedTweet, mention, tweetId})
+ GenServer.cast(engine,{:addMentionedTweet, mention, tweetId})
  end
 
  if String.contains? tweet, "#" do
@@ -64,7 +64,7 @@ def readTweet(tweets,tweetId, engine) do
 
 # IO.inspect hash
 # IO.inspect :ets.lookup(hashTagTweetMap, hash)
-Genserver.cast(engine,{:addHashTagTweet, hash, tweetId})
+GenServer.cast(engine,{:addHashTagTweet, hash, tweetId})
 #Twitter.Helper.updateHashTagTweetMap(hash, tweetId, hashTagTweetMap)
  end
 end

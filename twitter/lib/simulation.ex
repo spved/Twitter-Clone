@@ -82,7 +82,22 @@ defmodule Twitter.Simulator do
 
 # {_,_,users} = 
 # GenServer.call(engine,{:getUserTable})
+  
+  #Deleting users randomly
+  IO.inspect "Deletion"
+  IO.inspect length(clients)
 
+  deleteUser = Enum.random(clients)
+          IO.inspect deleteUser, label: "deleteUser"
+          #deleteUser(engine, pid)
+          GenServer.cast(x, {:delete, deleteUser})
+
+  #Enum.map((1..round(length(clients)*0.1)), fn(x) ->
+  #        deleteUser = Enum.random(clients)
+  #        IO.inspect deleteUser, label: "deleteUser"
+          #deleteUser(engine, pid)
+  #        GenServer.cast(x, {:delete, deleteUser})
+  #      end)
  
 
    #[{_, currentList}] = :ets.lookup(hashTagTweetMap, "#Concurrency")

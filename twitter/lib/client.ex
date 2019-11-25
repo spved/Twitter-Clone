@@ -7,14 +7,14 @@ defmodule Twitter.Client do
       {_,engine} = state
       #:ets.insert_new(users, {username, [password,email,0]})
       Twitter.Engine.insertUser(engine,self(), username, password, email)
-      #Genserver.cast(engine, {:insertUser, self(), username, password, email})
+      #GenServer.cast(engine, {:insertUser, self(), username, password, email})
       state = {username, engine}
       {:noreply, state}
   end
 
-   def handle_cast({:delete,users,username}, state) do
+   def handle_cast({:delete,username}, state) do
      {_,engine} = state
-     Genserver.cast(engine, {:deleteUser, self()})
+     GenServer.cast(engine, {:deleteUser, self()})
      #:ets.delete(:users, username)
      state = {username, engine}
     end
@@ -37,12 +37,12 @@ defmodule Twitter.Client do
 
     def handle_cast({:tweet,userName, tweetData, subscribers, users, tableSize, tweets, hashTagTweetMap, mentionUserMap}, state) do
         {_,engine} = state
-        Genserver.cast(engine, {:send, userName, tweetData, subscribers, users})
-        {_,tweetId,_} = Genserver.call(engine,{:addTweet,tweetData})
+        GenServer.cast(engine, {:send, userName, tweetData, subscribers, users})
+        {_,tweetId,_} = GenServer.call(engine,{:addTweet,tweetData})
         #def handle_cast({:send, self(), tweet, subscribers, users}, state) do
         #Twitter.Client.send(userName, tweetData, subscribers, users)
         #def handle_cast({:addTweetsToUser, user, tweetId}, state) do
-        Genserver.cast(engine, {:addTweetsToUser, userName, tweetId})
+        GenServer.cast(engine, {:addTweetsToUser, userName, tweetId})
         #tweetId = Twitter.Helper.addTweet(tweetData,tweets,tableSize)
         Twitter.Helper.readTweet(tweets,tweetId, engine)
     end
@@ -50,7 +50,7 @@ defmodule Twitter.Client do
     def handle_cast({:reTweet,userName, tweetData, subscribers, users}, state) do
         {_,engine} = state
         #def handle_cast({:send, userName, tweet, subscribers, users}, state) do
-        Genserver.cast(engine,{:send, userName, tweetData, subscribers, users})
+        GenServer.cast(engine,{:send, userName, tweetData, subscribers, users})
         #Twitter.Client.send(userName, tweetData, subscribers, users)
     end
 #helper functions
@@ -89,14 +89,14 @@ defmodule Twitter.Client do
     user2Subscribers = user2Subscribers ++ [userId1]
     #def handle_cast({:addSubscriber, user, suser}, state) do
     #:ets.insert(subscribers, {userId2, user2Subscribers})
-    Genserver.cast(engine,{:addSubscriber, userId2, user2Subscribers})
+    GenServer.cast(engine,{:addSubscriber, userId2, user2Subscribers})
     #:ets.update_counter(subscribers, userId2, user2Subscribers )
 
     user1SubscribedTo = Twitter.Helper.readValue(:ets.lookup(subscribedTo, userId1))
     user1SubscribedTo = user1SubscribedTo ++ [userId2]
     #:ets.insert(subscribedTo, {userId1, user2Subscribers})
     #def handle_cast({:addSubscriberOf, user, suser}, state) do
-    Genserver.cast(engine,{:addSubscriberOf, userId1, user2Subscribers})
+    GenServer.cast(engine,{:addSubscriberOf, userId1, user2Subscribers})
    #:ets.update_counter(subscribedTo, userId1, user2Subscribers )
 
   end

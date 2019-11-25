@@ -9,7 +9,7 @@ defmodule Twitter.Engine do
      #for each subscriber get tweets
     Enum.map(currentList, fn ni ->
       pid = List.first(Twitter.Helper.readValue(:ets.lookup(users, userName)))
-      Genserver.cast(pid, {:receive, ni, userName, tweet})
+      GenServer.cast(pid, {:receive, ni, userName, tweet})
     end)
     {:noreply, state}
   end
@@ -30,7 +30,7 @@ defmodule Twitter.Engine do
   def handle_call({:logout, userName}, _from, state) do
     {users,_,_,_,_,_,_,_} = state
     if Twitter.Helper.validateUser(userName, users) do
-      list = Twitter.Hlper.readValue(:ets.lookup(users, userName))
+      list = Twitter.Helper.readValue(:ets.lookup(users, userName))
       :ets.insert(users, {userName, List.replace_at(list, 2, 0)})
     end
     {:reply,:ok, state}
@@ -39,14 +39,18 @@ defmodule Twitter.Engine do
   #users table get, set, unset
 
   def insertUser(engine, pid, user, passwd, email) do
-   Genserver.cast(engine, {:insertUser, pid, user, passwd, email})
+   GenServer.cast(engine, {:insertUser, pid, user, passwd, email})
   end
 
   def handle_cast({:insertUser, pid, user, passwd, email}, state) do
-    IO.inspect "came here"
     {users,_,_,_,_,_,_,_} = state
+    IO.inspect :ets.lookup(users, "user3")
     :ets.insert_new(users, {user, [pid, passwd,email,0]})
     {:noreply, state}
+  end
+
+  def deleteUser(engine, pid) do
+   GenServer.cast(engine, {:deleteUser, pid})
   end
 
   def handle_cast({:deleteUser, user}, state) do
