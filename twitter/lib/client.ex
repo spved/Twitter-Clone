@@ -41,7 +41,7 @@ defmodule Twitter.Client do
         #def handle_cast({:addTweetsToUser, user, tweetId}, state) do
         Genserver.cast(engine, {:addTweetsToUser, userName, tweetId})
         #tweetId = Twitter.Helper.addTweet(tweetData,tweets,tableSize)
-        Twitter.Helper.readTweet(tweets,tweetId, hashTagTweetMap, users, mentionUserMap)
+        Twitter.Helper.readTweet(tweets,tweetId, engine)
     end
 
     def handle_cast({:reTweet,userName, tweetData, subscribers, users}, state) do

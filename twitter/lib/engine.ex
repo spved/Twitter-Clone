@@ -111,13 +111,13 @@ defmodule Twitter.Engine do
   end
 
   #hashTagTweetMap table insert_new, insert, get
-  def handle_call({:getMentionedTweets, hashTag}, _from, state) do
+  def handle_call({:getHashTagTweets, hashTag}, _from, state) do
     {_,_,_,_,_,_,hashTagTweetMap,_} = state
     list = Twitter.Helper.readValue(:ets.lookup(hashTagTweetMap, hashTag))
     {:reply, list, state}
   end
 
-  def handle_cast({:addMentionedTweet, hashTag, tweetId}, state) do
+  def handle_cast({:addHashTagTweet, hashTag, tweetId}, state) do
     {_,_,_,_,_,_,hashTagTweetMap,_} = state
     list = Twitter.Helper.readValue(:ets.lookup(hashTagTweetMap, hashTag))
     if list == [] do

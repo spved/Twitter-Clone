@@ -47,71 +47,9 @@ def isLogin(userName, users) do
 end
 
 
-def addTweet(tweet,tweets,tableSize) do
-[{_, size}] = :ets.lookup(tableSize, "tweets")
-#IO.inspect :ets.info(tweets,size)
-#IO.inspect length(tweets)
-size = size + 1
-IO.inspect size
-tweetId = "T" <> "" <>Integer.to_string(size)
-IO.inspect tweetId
-:ets.insert_new(tweets, {tweetId, tweet})
-end
-
-def updateTweetUserMap(userId, tweetId, tweetUserMap) do
- #IO.inspect :ets.lookup(subscribers, userId2)
-  [{_, userTweets}] = :ets.lookup(tweetUserMap, userId)
-  userTweets = userTweets ++ [tweetId]
-  :ets.insert(tweetUserMap, {userId, userTweets})
-
-end
-
-def updateMentionsUserMap(mention, tweetId, mentionUserMap, users) do
- #IO.inspect :ets.lookup(subscribers, userId2)
-   if readValue(:ets.lookup(users, mention)) do
-    #"valid user"
-
-    if readValue(:ets.lookup(mentionUserMap, mention)) do
-       # "user was mentioned before"
-    userMentions = readValue(:ets.lookup(mentionUserMap, mention))
-
-    #IO.inspect "userMentions"
-
-    #IO.inspect userMentions
-    userMentions = userMentions ++ [tweetId]
-
-    #IO.inspect "user mentions after"
-    #IO.inspect userMentions
-
-    :ets.insert(mentionUserMap, {mention, userMentions})
-
- else
-    #"user was never mentioned before, new entry"
-    :ets.insert(mentionUserMap, {mention, [tweetId]})
- end
-
-    else
-    # "non existing user"
- end
- end
 
 
-
-def updateHashTagTweetMap(hash, tweetId, hashTagTweetMap) do
- #IO.inspect :ets.lookup(subscribers, userId2)
-  if readValue(:ets.lookup(hashTagTweetMap, hash)) do
-    #IO.inspect "present"
-    hashTagTweets = readValue(:ets.lookup(hashTagTweetMap, hash))
-    hashTagTweets = hashTagTweets ++ [tweetId]
-    :ets.insert(hashTagTweetMap, {hash, hashTagTweets})
- else
-    #IO.inspect "new entry"
-    :ets.insert(hashTagTweetMap, {hash, [tweetId]})
- end
-
-end
-
-def readTweet(tweets,tweetId, hashTagTweetMap, users, mentionUserMap) do
+def readTweet(tweets,tweetId, engine) do
   tweet = readValue(:ets.lookup(tweets, tweetId))
   #IO.inspect tweet
   #IO.inspect String.contains? tweet, "@"
@@ -123,13 +61,15 @@ def readTweet(tweets,tweetId, hashTagTweetMap, users, mentionUserMap) do
  {_,tweetSplit1} = Enum.fetch(tweetSplitMention, 1)
  #IO.inspect tweetSplit1
  tweetMention = String.split(tweetSplit1, " ")
-#tweetMention = Enum.fetch(tweetSplit1, 1)
+ #tweetMention = Enum.fetch(tweetSplit1, 1)
  #IO.inspect Enum.fetch(tweetSplit, 1)
  #IO.inspect tweetMention
  {_,mention} = Enum.fetch(tweetMention, 0)
  #mention = "@" <> "" <> mention
  #IO.inspect mention
- Twitter.Helper.updateMentionsUserMap(mention, tweetId, mentionUserMap, users)
+ #def handle_cast({:addHashTagTweet, hashTag, tweetId}, state) do
+ #Twitter.Helper.updateMentionsUserMap(mention, tweetId, mentionUserMap, users)
+ Genserver.cast(engine,{:addMentionedTweet, mention, tweetId})
  end
 
  if String.contains? tweet, "#" do
@@ -146,7 +86,8 @@ def readTweet(tweets,tweetId, hashTagTweetMap, users, mentionUserMap) do
 
 # IO.inspect hash
 # IO.inspect :ets.lookup(hashTagTweetMap, hash)
-Twitter.Helper.updateHashTagTweetMap(hash, tweetId, hashTagTweetMap)
+Genserver.cast(engine,{:addHashTagTweet, hash, tweetId})
+#Twitter.Helper.updateHashTagTweetMap(hash, tweetId, hashTagTweetMap)
  end
 end
 
