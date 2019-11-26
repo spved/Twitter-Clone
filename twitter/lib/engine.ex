@@ -42,11 +42,15 @@ defmodule Twitter.Engine do
    GenServer.call(engine, {:insertUser, pid, user, passwd, email})
   end
 
-  def handle_call({:insertUser, pid, user, passwd, email}, state) do
+  def handle_call({:insertUser, pid, user, passwd, email}, _from, state) do
     {users,_,_,_,_,_,_,_} = state
     IO.inspect :ets.lookup(users, "user3")
     :ets.insert_new(users, {user, [pid, passwd,email,0]})
     {:reply, :ok, state}
+  end
+
+  def deleteUser(engine, pid) do
+   GenServer.cast(engine, {:deleteUser, pid})
   end
 
   def deleteUser(engine, pid) do
@@ -199,11 +203,13 @@ defmodule Twitter.Engine do
   end
 
    #Functions for testing simulator
-   def handle_call({:getUserTable}, _from, state) do
-     {users,_,_,_,_,_,_,_} = state
-     IO.inspect :ets.lookup(:users, "user2")
-     {:reply, :ok, users}
-   end
+
+   def handle_cast({:getUserTable, userName}, state) do
+    {users,_,_,_,_,_,_,_} = state
+    #IO.inspect pid
+    IO.inspect :ets.lookup(:users, userName), label: "userDetails"
+    {:noreply, state}
+  end
 
   def start_node() do
     {:ok, pid} = GenServer.start_link(__MODULE__, :ok, [])

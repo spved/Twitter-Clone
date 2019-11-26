@@ -70,10 +70,59 @@ defmodule Twitter.Simulator do
   :ets.insert_new(tableSize_table, {"users", 5})
   :ets.insert_new(tableSize_table, {"tweets", 5})
 
+
+  #Register all the users
   IO.inspect "Registering users"
-          Enum.each(clients, fn x ->
-            GenServer.cast(x, {:register, "user","pwd","email"})
+          Enum.each(Enum.with_index(clients), fn({x, i}) ->
+            user = Twitter.Simulator.Helper.generateUserId(i)
+            pwd = Twitter.Simulator.Helper.generatePassword(i)
+            mail = Twitter.Simulator.Helper.generateMail(i)
+            GenServer.cast(x, {:register, user, pwd, mail})
           end)
+
+# {_,_,users} = 
+# GenServer.call(engine,{:getUserTable})
+  
+  #Deleting users randomly
+  IO.inspect "Deletion"
+  IO.inspect length(clients)
+
+ # deleteUser = Enum.random(clients)
+ #         IO.inspect deleteUser, label: "deleteUser"
+  #        IO.inspect "Before deletion"
+          #deleteUser(engine, pid)
+   #        GenServer.cast(deleteUser, {:getUserTable, deleteUser})
+    #       GenServer.cast(deleteUser, {:delete, deleteUser})
+     #      IO.inspect "After deletion"
+      #    GenServer.cast(deleteUser, {:getUserTable, deleteUser}) 
+
+  Enum.map((1..round(length(clients)*0.1)), fn(x) ->
+          deleteUser = Enum.random(clients)
+          IO.inspect deleteUser, label: "deleteUser"
+          #IO.inspect "Before deletion"
+          #deleteUser(engine, pid)
+           GenServer.cast(deleteUser, {:getUserTable, deleteUser})
+           GenServer.cast(deleteUser, {:delete, deleteUser})
+           #IO.inspect "After deletion"
+          GenServer.cast(deleteUser, {:getUserTable, deleteUser}) 
+        end)
+ 
+
+ IO.inspect "Subscribe"
+
+ #GenServer.cast({:subscribe,"user2", "user3", subscribedTo, subscribers}, state) do
+ 
+ 
+ 
+ 
+ IO.inspect "query subscribed to"
+
+ queryUser = Enum.random(clients)
+ IO.inspect queryUser, label: "queryUser"
+ GenServer.call(queryUser,{:querySubscribedTo, queryUser})
+
+
+
 
    #[{_, currentList}] = :ets.lookup(hashTagTweetMap, "#Concurrency")
   #IO.inspect currentList
@@ -145,5 +194,10 @@ defmodule Twitter.Simulator do
 
   #IO.inspect "Before Register"
 
+    infinite()
+   end
+
+   def infinite() do
+    infinite()
    end
 end
