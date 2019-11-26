@@ -8,6 +8,8 @@ defmodule Twitter do
       numUsers = Enum.at(args, 0) |> String.to_integer()
       numTweets = Enum.at(args, 1) |> String.to_integer()
 
+      hashTagTweetMap = :ets.new(:hashTagTweetMap, [:named_table,:public])
+
       engine = Twitter.Engine.start_node()
       GenServer.call(engine, {:initDB})
       IO.inspect engine
@@ -18,9 +20,6 @@ defmodule Twitter do
             pid
           end)
           IO.inspect clients
-
-          
-          
 
       Twitter.Simulator.simulate(numUsers, numTweets, clients, engine)
     end
