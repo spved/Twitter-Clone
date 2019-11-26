@@ -9,7 +9,7 @@ defmodule Twitter.Engine do
      #for each subscriber get tweets
     Enum.map(currentList, fn ni ->
       pid = List.first(Twitter.Helper.readValue(:ets.lookup(users, userName)))
-      Genserver.cast(pid, {:receive, ni, userName, tweet})
+      GenServer.cast(pid, {:receive, ni, userName, tweet})
     end)
     {:noreply, state}
   end
@@ -30,17 +30,27 @@ defmodule Twitter.Engine do
   def handle_call({:logout, userName}, _from, state) do
     {users,_,_,_,_,_,_,_} = state
     if Twitter.Helper.validateUser(userName, users) do
-      list = Twitter.Hlper.readValue(:ets.lookup(users, userName))
+      list = Twitter.Helper.readValue(:ets.lookup(users, userName))
       :ets.insert(users, {userName, List.replace_at(list, 2, 0)})
     end
     {:reply,:ok, state}
   end
 
   #users table get, set, unset
-  def handle_cast({:insertUser, pid, user, passwd, email}, state) do
+
+  def insertUser(engine, pid, user, passwd, email) do
+   GenServer.call(engine, {:insertUser, pid, user, passwd, email})
+  end
+
+  def handle_call({:insertUser, pid, user, passwd, email}, state) do
     {users,_,_,_,_,_,_,_} = state
+    IO.inspect :ets.lookup(users, "user3")
     :ets.insert_new(users, {user, [pid, passwd,email,0]})
-    {:noreply, state}
+    {:reply, :ok, state}
+  end
+
+  def deleteUser(engine, pid) do
+   GenServer.cast(engine, {:deleteUser, pid})
   end
 
   def handle_cast({:deleteUser, user}, state) do
@@ -149,14 +159,27 @@ defmodule Twitter.Engine do
   end
 
   def handle_cast({:addHashTagTweet, hashTag, tweetId}, state) do
-    {_,_,_,_,_,_,hashTagTweetMap,_} = state
-    list = Twitter.Helper.readValue(:ets.lookup(hashTagTweetMap, hashTag))
+    #{_,_,_,_,_,_,hashTagTweetMap,_} = state
+    list = Twitter.Helper.readValue(:ets.lookup(:hashTagTweetMap, hashTag))
     if list == [] do
-      :ets.insert_new(hashTagTweetMap, {hashTag, [tweetId]})
+      :ets.insert_new(:hashTagTweetMap, {hashTag, [tweetId]})
     else
-      :ets.insert(hashTagTweetMap, {hashTag, list++tweetId})
+      :ets.insert(:hashTagTweetMap, {hashTag, list++tweetId})
     end
     {:noreply, state}
+  end
+
+  def handle_call({:print}, _from, state) do
+    {users, tweets, subscribers, subscribedTo, tweetUserMap, mentionUserMap, hashTagTweetMap, tableSize} = state
+
+    IO.inspect users, label: "users"
+    IO.inspect tweets, label: "tweets"
+    IO.inspect subscribers, label: "subscribers"
+    IO.inspect subscribedTo, label: "subscribedTo"
+    IO.inspect tweetUserMap, label: "tweetUserMap"
+    IO.inspect mentionUserMap, label: "mentionUserMap"
+    IO.inspect hashTagTweetMap, label: "hashTagTweetMap"
+    {:reply, :ok, state}
   end
 
   def handle_call({:initDB}, _from, state) do
@@ -166,14 +189,21 @@ defmodule Twitter.Engine do
     subscribedTo = :ets.new(:subscribedTo, [:named_table,:public])
     tweetUserMap = :ets.new(:tweetUserMap, [:named_table,:public])
     mentionUserMap = :ets.new(:mentionUserMap, [:named_table,:public])
-    hashTagTweetMap = :ets.new(:hashTagTweetMap, [:named_table,:public])
     tableSize = :ets.new(:tableSize, [:named_table,:public])
+    hashTagTweetMap = "x"
 
     :ets.insert_new(tableSize, {"tweets", 0})
 
     state = {users, tweets, subscribers, subscribedTo, tweetUserMap, mentionUserMap, hashTagTweetMap, tableSize}
     {:reply, :ok, state}
   end
+
+   #Functions for testing simulator
+   def handle_call({:getUserTable}, _from, state) do
+     {users,_,_,_,_,_,_,_} = state
+     IO.inspect :ets.lookup(:users, "user2")
+     {:reply, :ok, users}
+   end
 
   def start_node() do
     {:ok, pid} = GenServer.start_link(__MODULE__, :ok, [])
