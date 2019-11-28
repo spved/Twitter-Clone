@@ -78,6 +78,7 @@ defmodule Twitter.Simulator do
             pwd = Twitter.Simulator.Helper.generatePassword(i)
             mail = Twitter.Simulator.Helper.generateMail(i)
             GenServer.cast(x, {:register, user, pwd, mail})
+            GenServer.call(engine, {:login, user, pwd})
           end)
 
 # {_,_,users} = 
@@ -86,34 +87,39 @@ defmodule Twitter.Simulator do
   #Deleting users randomly
   IO.inspect "Deletion"
   IO.inspect length(clients)
-
- # deleteUser = Enum.random(clients)
- #         IO.inspect deleteUser, label: "deleteUser"
-  #        IO.inspect "Before deletion"
-          #deleteUser(engine, pid)
-   #        GenServer.cast(deleteUser, {:getUserTable, deleteUser})
-    #       GenServer.cast(deleteUser, {:delete, deleteUser})
-     #      IO.inspect "After deletion"
-      #    GenServer.cast(deleteUser, {:getUserTable, deleteUser}) 
-
-  Enum.map((1..round(length(clients)*0.1)), fn(x) ->
+  
+deletedUsers = Enum.map((1..round(length(clients)*0.1)), fn(x) ->
           deleteUser = Enum.random(clients)
           IO.inspect deleteUser, label: "deleteUser"
           #IO.inspect "Before deletion"
           #deleteUser(engine, pid)
-           GenServer.cast(deleteUser, {:getUserTable, deleteUser})
-           GenServer.cast(deleteUser, {:delete, deleteUser})
+          GenServer.cast(deleteUser, {:getUserTable, deleteUser})
+          GenServer.cast(deleteUser, {:delete, deleteUser})
            #IO.inspect "After deletion"
           GenServer.cast(deleteUser, {:getUserTable, deleteUser}) 
-        end)
- 
+          deleteUser
+     end)
+
+IO.inspect deletedUsers, label: "deletedUsers"
+
+IO.inspect clients, label: "clientsBefore"
+ clients = clients -- deletedUsers
+IO.inspect clients, label: "clientsAfter"
+
 
  IO.inspect "Subscribe"
 
- #GenServer.cast({:subscribe,"user2", "user3", subscribedTo, subscribers}, state) do
- 
- 
- 
+  Enum.map((1..round(length(clients)*0.9)), fn(x) ->
+     userSubscribing = Enum.random(clients)
+     userSubscribingTo = Enum.random(clients)
+     IO.inspect userSubscribing, label: "userSubscribing"
+     IO.inspect userSubscribingTo, label: "userSubscribingTo"
+     userName = GenServer.call(userSubscribingTo,{:getUserName})
+     IO.inspect userName, label: "userName"
+     GenServer.cast(userSubscribing,{:subscribe,userSubscribing, userName})
+     IO.inspect "checking subscription"
+     GenServer.call(userSubscribingTo,{:getSubscribersOf, userName}) 
+ end)
  
  IO.inspect "query subscribed to"
 
@@ -121,8 +127,17 @@ defmodule Twitter.Simulator do
  IO.inspect queryUser, label: "queryUser"
  GenServer.call(queryUser,{:querySubscribedTo, queryUser})
 
+ IO.inspect "tweet"
 
-
+ user = Enum.random(clients)
+ IO.inspect user, label: "user to tweet"   
+  IO.inspect "subscribers pf chosen user"
+  userName = GenServer.call(user,{:getUserName})
+  IO.inspect userName, label: "userName"
+ GenServer.call(user,{:getSubscribersOf, userName}) 
+ GenServer.cast(user,{:tweet,userName, "Tweet 1"}) 
+ IO.inspect "getTweet"
+GenServer.call(engine,{:getTweet, 1})
 
    #[{_, currentList}] = :ets.lookup(hashTagTweetMap, "#Concurrency")
   #IO.inspect currentList
@@ -138,7 +153,7 @@ defmodule Twitter.Simulator do
    #Twitter.tweet("user3", "tweet1", subscribers)
    #Twitter.Client.querySubscribedTo("user3",subscribers,tweetUserMap,tweets)
    #Twitter.Client.querySubscribedTo("user6",subscribers,tweetUserMap, tweets)
-
+   
    #Twitter.Client.isLogin("user3", users)
    #Twitter.Client.isLogin("user7", users)
    #Twitter.Client.login("user4", "pwd_uer4", users)

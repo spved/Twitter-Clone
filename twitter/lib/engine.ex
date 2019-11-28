@@ -5,7 +5,9 @@ defmodule Twitter.Engine do
 
   def handle_cast({:send, userName, tweet}, state) do
     {users,_,subscribers,_,_,_,_,_} = state
-    currentList = GenServer.call(self(),{:getSubscribers, userName})
+    # {_,_,subscribers,_,_,_,_,_} = state
+    currentList = Twitter.Helper.readValue(:ets.lookup(subscribers, userName))
+    #currentList = GenServer.call(self(),{:getSubscribers, userName})
      #for each subscriber get tweets
     Enum.map(currentList, fn ni ->
       pid = List.first(Twitter.Helper.readValue(:ets.lookup(users, userName)))
@@ -15,6 +17,7 @@ defmodule Twitter.Engine do
   end
 
   #login/logout
+  
   def handle_call({:login,userName, password}, _from, state) do
     {users,_,_,_,_,_,_,_} = state
     if Twitter.Helper.validateUser(userName) do
@@ -75,14 +78,21 @@ defmodule Twitter.Engine do
   def handle_call({:getTweet, tweetId}, _from, state) do
     {_,tweets,_,_,_,_,_,_} = state
     tweet = :ets.lookup(tweets, tweetId)
+    IO.inspect tweet, label: "tweet added"
     {:reply, tweet, state}
   end
 
-  def handle_cast({:addTweet, tweet}, state) do
+  def handle_call({:addTweet, tweet}, _from, state) do
     {_,tweets,_,_,_,_,_,tableSize} = state
     id = :ets.update_counter(tableSize, "tweets", {2,1})
+    IO.inspect id, label: "id"
+    IO.inspect tweet, label: "tweet"
+
     :ets.insert_new(tweets, {id, tweet})
-    {:noreply, state}
+
+    IO.inspect :ets.lookup(tweets, id)
+
+    {:reply, id, state}
   end
 
   #subscribers table insert_new, insert, get
@@ -98,15 +108,20 @@ defmodule Twitter.Engine do
     if list == [] do
       :ets.insert_new(subscribers, {user, [suser]})
     else
-      :ets.insert(subscribers, {user, list++suser})
+      :ets.insert(subscribers, {user, list++[suser]})
     end
     {:noreply, state}
   end
 
   #subscribedTo table insert_new, insert, get
   def handle_call({:getSubscribersOf, user}, _from, state) do
+    IO.inspect user, label: "user"
     {_,_,_,subscribedTo,_,_,_,_} = state
     list = Twitter.Helper.readValue(:ets.lookup(subscribedTo, user))
+    IO.inspect list
+    #Enum.each list, fn l -> 
+     # IO.inspect l
+    #end
     {:reply, list, state}
   end
 
@@ -116,7 +131,7 @@ defmodule Twitter.Engine do
     if list == [] do
       :ets.insert_new(subscribedTo, {user, [suser]})
     else
-      :ets.insert(subscribedTo, {user, list++suser})
+      :ets.insert(subscribedTo, {user, list++[suser]})
     end
     {:noreply, state}
   end
@@ -134,7 +149,7 @@ defmodule Twitter.Engine do
     if list == [] do
       :ets.insert_new(tweetUserMap, {user, [tweetId]})
     else
-      :ets.insert(tweetUserMap, {user, list++tweetId})
+      :ets.insert(tweetUserMap, {user, list++[tweetId]})
     end
     {:noreply, state}
   end
@@ -152,7 +167,7 @@ defmodule Twitter.Engine do
     if list == [] do
       :ets.insert_new(mentionUserMap, {user, [tweetId]})
     else
-      :ets.insert(mentionUserMap, {user, list++tweetId})
+      :ets.insert(mentionUserMap, {user, list++[tweetId]})
     end
     {:noreply, state}
   end
@@ -170,7 +185,7 @@ defmodule Twitter.Engine do
     if list == [] do
       :ets.insert_new(:hashTagTweetMap, {hashTag, [tweetId]})
     else
-      :ets.insert(:hashTagTweetMap, {hashTag, list++tweetId})
+      :ets.insert(:hashTagTweetMap, {hashTag, list++[tweetId]})
     end
     {:noreply, state}
   end
