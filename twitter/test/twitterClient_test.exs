@@ -83,6 +83,8 @@ defmodule TwitterClientTest do
     {engine, clients} = Twitter.Test.Helper.createEngineAndClient()
     Twitter.Test.Helper.createTestCase1(engine, clients)
     GenServer.cast(Enum.at(clients,2), {:tweet, "tweet 4 #tweet4 @4"})
+    GenServer.cast(Enum.at(clients,2), {:tweet, "tweet 4 #tweet5 @4"})
+
     :timer.sleep(10)
 
     IO.inspect GenServer.call(Enum.at(clients,4), {:loginUser, "passwd"}), label: "loggedIn"

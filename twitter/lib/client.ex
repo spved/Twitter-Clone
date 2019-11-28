@@ -92,9 +92,10 @@ defmodule Twitter.Client do
       IO.inspect [tweetUser,tweet], label: userName
       tweets
     else
-        tweets++tweet
+        tweets++[tweet]
     end
     state = {user, engine, tweets}
+    IO.inspect state
     {:noreply, state}
   end
 
