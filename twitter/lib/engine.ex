@@ -6,13 +6,18 @@ defmodule Twitter.Engine do
   def handle_cast({:send, userName, tweet}, state) do
     {users,_,subscribers,_,_,_,_,_} = state
     # {_,_,subscribers,_,_,_,_,_} = state
-    currentList = Twitter.Helper.readValue(:ets.lookup(subscribers, userName))
-    #currentList = GenServer.call(self(),{:getSubscribers, userName})
-     #for each subscriber get tweets
-    Enum.map(currentList, fn ni ->
-      pid = List.first(Twitter.Helper.readValue(:ets.lookup(users, userName)))
+    
+      currentList = Twitter.Helper.readValue(:ets.lookup(subscribers, userName))
+      #currentList = GenServer.call(self(),{:getSubscribers, userName})
+      #for each subscriber get tweets
+      Enum.map(currentList, fn ni ->
+      if Twitter.Helper.validateUser(ni, users) do
+      pid = List.first(Twitter.Helper.readValue(:ets.lookup(users, ni)))
+
       GenServer.cast(pid, {:receive, ni, userName, tweet})
+      end
     end)
+    
     {:noreply, state}
   end
 
@@ -56,13 +61,20 @@ defmodule Twitter.Engine do
    GenServer.cast(engine, {:deleteUser, pid})
   end
 
-  def deleteUser(engine, pid) do
-   GenServer.cast(engine, {:deleteUser, pid})
+  def deleteTweet(engine, pid) do
+   GenServer.cast(engine, {:deleteTweet, pid})
   end
 
   def handle_cast({:deleteUser, user}, state) do
     {users,_,_,_,_,_,_,_} = state
     :ets.delete(:users, user)
+    {:noreply, state}
+  end
+
+  def handle_cast({:deleteTweet, tweet}, state) do
+    {_,tweets,_,_,_,_,_,_} = state
+    :ets.delete(:tweets, tweet)
+    IO.inspect tweet, label: "deletedTweet"
     {:noreply, state}
   end
 
@@ -106,7 +118,9 @@ defmodule Twitter.Engine do
     if list == [] do
       :ets.insert_new(subscribers, {user, [suser]})
     else
-      :ets.insert(subscribers, {user, list++[suser]})
+    list = list ++ [suser]
+    list = Enum.uniq(list)
+      :ets.insert(subscribers, {user, list})
     end
     {:noreply, state}
   end
@@ -129,7 +143,9 @@ defmodule Twitter.Engine do
     if list == [] do
       :ets.insert_new(subscribedTo, {user, [suser]})
     else
-      :ets.insert(subscribedTo, {user, list++[suser]})
+    list = list ++ [suser]
+    list = Enum.uniq(list)
+      :ets.insert(subscribedTo, {user, list})
     end
     {:noreply, state}
   end

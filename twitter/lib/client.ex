@@ -18,8 +18,14 @@ defmodule Twitter.Client do
      {userName,engine, tweetList} = state
      GenServer.cast(engine, {:deleteUser, userName})
      #:ets.delete(:users, username)
+     IO.inspect userName, label: "userName to delete tweet"
+ tweetList = GenServer.call(engine,{:getTweetsOfUser, userName})
+ #IO.inspect tweetList, label: "tweetList to be deletec"
+  Enum.each(tweetList, fn(tweet) ->
+      GenServer.cast(engine, {:deleteTweet, tweet})
+  end)
      state = {userName, engine, tweetList}
-     Process.exit(self(), :normal)
+    #Process.exit(self(), :normal)
      {:noreply, state}
     end
 
@@ -35,7 +41,7 @@ defmodule Twitter.Client do
        #   tweetList = Twitter.Helper.readValue(:ets.lookup(tweetUserMap, ni))
            #get tweets for each tweet id
            stweets = Enum.map(tweetList, fn n ->
-             stweet = GenServer.call({:getTweet, n})
+             stweet = GenServer.call(engine,{:getTweet, n})
        #     stweet = Twitter.Helper.readValue(:ets.lookup(tweets, n))
             stweet
           end)
@@ -97,14 +103,14 @@ defmodule Twitter.Client do
           end)
   end
 
-  def handle_cast({:receive, userName, tweetUser, tweet}, _from, state) do
+  def handle_cast({:receive, userName, tweetUser, tweet}, state) do
     {user, engine, tweets} = state
     if Twitter.Helper.isLogin(userName, engine) == 1 do
       IO.inspect [tweetUser,tweet], label: userName 
     else
         tweets = tweets++tweet  
     end
-    state = {user, engine, tweets}
+    {:noreply, state}
   end
 
   def handle_call({:getUserName}, _from, state) do

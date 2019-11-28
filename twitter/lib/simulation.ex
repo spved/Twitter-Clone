@@ -70,6 +70,10 @@ defmodule Twitter.Simulator do
   :ets.insert_new(tableSize_table, {"users", 5})
   :ets.insert_new(tableSize_table, {"tweets", 5})
 
+  simulation = :ets.new(:simulation, [:named_table,:public])
+  :ets.insert_new(simulation, {"tweetCount", 0})
+
+ 
 
   #Register all the users
   IO.inspect "Registering users"
@@ -127,17 +131,35 @@ IO.inspect clients, label: "clientsAfter"
  IO.inspect queryUser, label: "queryUser"
  GenServer.call(queryUser,{:querySubscribedTo, queryUser})
 
+ tweetList=[]
+ tweetList = tweetList ++ ["Tweet1","Tweet2","Tweet3","Tweet4","Tweet5","Tweet6","Tweet7","Tweet8","Tweet9","Tweet10"]
+
  IO.inspect "tweet"
 
- user = Enum.random(clients)
+ Enum.each(clients, fn(user) ->
+ Enum.map((1..numTweets), fn(x) ->
+    tweetData = Enum.random(tweetList)
+  #  user = Enum.random(clients)
  IO.inspect user, label: "user to tweet"   
   IO.inspect "subscribers pf chosen user"
   userName = GenServer.call(user,{:getUserName})
   IO.inspect userName, label: "userName"
  GenServer.call(user,{:getSubscribersOf, userName}) 
- GenServer.cast(user,{:tweet,userName, "Tweet 1"}) 
- IO.inspect "getTweet"
-GenServer.call(engine,{:getTweet, 1})
+ [{_, num_tweets}] = :ets.lookup(:simulation, "tweetCount")
+ :ets.insert(simulation, {"tweetCount", num_tweets+1})
+ #IO.inspect num_tweets+1, label: "num_tweets+1"
+ GenServer.cast(user,{:tweet,userName, tweetData}) 
+ #IO.inspect "getTweet"
+#GenServer.call(engine,{:getTweet, 1})
+end)
+ end)
+
+
+ deleteUser = Enum.random(clients)
+ IO.inspect deleteUser, label: "deleteUser to delete tweets"
+ userName = GenServer.call(deleteUser,{:getUserName})
+ GenServer.cast(deleteUser, {:delete, deleteUser})
+ 
 
    #[{_, currentList}] = :ets.lookup(hashTagTweetMap, "#Concurrency")
   #IO.inspect currentList
@@ -209,10 +231,21 @@ GenServer.call(engine,{:getTweet, 1})
 
   #IO.inspect "Before Register"
 
-    infinite()
+    infinite(numUsers*numTweets*0.8)
    end
 
-   def infinite() do
-    infinite()
+   def infinite(total_tweets) do
+   [{_, num_tweets}] = :ets.lookup(:simulation, "tweetCount")
+   #[{_, tr}] = :ets.lookup(:table, "tr")
+   # IO.inspect {tr, count}
+    if num_tweets >= total_tweets do
+      #simulation = :ets.new(:simulation, [:named_table,:public])
+      #:ets.insert_new(simulation, {"tweetCount", 0})
+      
+      #IO.puts(maxHops)
+    else
+    IO.inspect num_tweets, label: "num_tweets"
+    infinite(total_tweets)
+   end
    end
 end
