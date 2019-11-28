@@ -17,7 +17,7 @@ defmodule Twitter.Engine do
   #login/logout
   def handle_call({:login,userName, password}, _from, state) do
     {users,_,_,_,_,_,_,_} = state
-    if Twitter.Helper.validateUser(userName, users) do
+    if Twitter.Helper.validateUser(userName) do
       list = Twitter.Helper.readValue(:ets.lookup(users, userName))
       userPassword = List.first(list)
       if userPassword == password do
@@ -29,7 +29,7 @@ defmodule Twitter.Engine do
 
   def handle_call({:logout, userName}, _from, state) do
     {users,_,_,_,_,_,_,_} = state
-    if Twitter.Helper.validateUser(userName, users) do
+    if Twitter.Helper.validateUser(userName) do
       list = Twitter.Helper.readValue(:ets.lookup(users, userName))
       :ets.insert(users, {userName, List.replace_at(list, 2, 0)})
     end
@@ -44,8 +44,10 @@ defmodule Twitter.Engine do
 
   def handle_call({:insertUser, pid, user, passwd, email}, _from, state) do
     {users,_,_,_,_,_,_,_} = state
-    IO.inspect :ets.lookup(users, "user3")
-    :ets.insert_new(users, {user, [pid, passwd,email,0]})
+    if !Twitter.Helper.validateUser(user) do
+    #IO.inspect :ets.lookup(users, "user3")
+      :ets.insert_new(users, {user, [pid, passwd,email,0]})
+    end
     {:reply, :ok, state}
   end
 
@@ -187,14 +189,18 @@ defmodule Twitter.Engine do
   end
 
   def handle_call({:initDB}, _from, state) do
-    users = :ets.new(:users, [:named_table,:public])
+    users = if :ets.whereis :user == :undefined do
+      :ets.new(:users, [:named_table,:public])
+    else
+      :ets.whereis :user
+    end
     tweets = :ets.new(:tweets, [:named_table,:public])
     subscribers = :ets.new(:subscribers, [:named_table,:public])
     subscribedTo = :ets.new(:subscribedTo, [:named_table,:public])
     tweetUserMap = :ets.new(:tweetUserMap, [:named_table,:public])
     mentionUserMap = :ets.new(:mentionUserMap, [:named_table,:public])
     tableSize = :ets.new(:tableSize, [:named_table,:public])
-    hashTagTweetMap = "x"
+    hashTagTweetMap = :ets.new(:hashTagTweetMap, [:named_table,:public])
 
     :ets.insert_new(tableSize, {"tweets", 0})
 
@@ -213,6 +219,7 @@ defmodule Twitter.Engine do
 
   def start_node() do
     {:ok, pid} = GenServer.start_link(__MODULE__, :ok, [])
+    GenServer.call(pid, {:initDB})
     pid
   end
 

@@ -12,12 +12,13 @@ end
 def validateUser([]) do
   false
 end
-def validateUser(_) do
+
+def validateUser([{_,_}]) do
   true
 end
 
-def validateUser(userName, users) do
-  validateUser(readValue(:ets.lookup(users, userName)))
+def validateUser(userName) do
+  validateUser(readValue(:ets.lookup(:users, userName)))
 end
 
 def isLogin(userName, engine) do

@@ -34,7 +34,7 @@ defmodule Twitter.Client do
        #   tweetList = Twitter.Helper.readValue(:ets.lookup(tweetUserMap, ni))
            #get tweets for each tweet id
            stweets = Enum.map(tweetList, fn n ->
-             stweet = GenServer.call({:getTweet, n})
+           stweet = GenServer.call(engine, {:getTweet, n})
        #     stweet = Twitter.Helper.readValue(:ets.lookup(tweets, n))
             stweet
           end)
