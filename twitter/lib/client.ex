@@ -17,12 +17,10 @@ defmodule Twitter.Client do
      {userName,engine, tweetList} = state
      GenServer.cast(engine, {:deleteUser, userName})
      #:ets.delete(:users, username)
-     IO.inspect userName, label: "userName to delete tweet"
- tweetList = GenServer.call(engine,{:getTweetsOfUser, userName})
- #IO.inspect tweetList, label: "tweetList to be deletec"
-  Enum.each(tweetList, fn(tweet) ->
+     tweetList = GenServer.call(engine,{:getTweetsOfUser, userName})
+    Enum.each(tweetList, fn(tweet) ->
       GenServer.cast(engine, {:deleteTweet, tweet})
-  end)
+    end)
      state = {userName, engine, tweetList}
     #Process.exit(self(), :normal)
      {:noreply, state}
@@ -46,11 +44,10 @@ defmodule Twitter.Client do
        {:reply, subscribedTweets, state}
     end
 
-    def handle_cast({:tweet,userName, tweetData}, state) do
-        {_,engine, _} = state
+    def handle_cast({:tweet, tweetData}, state) do
+        {userName,engine, _} = state
         GenServer.cast(engine, {:send, userName, tweetData})
        tweetId = GenServer.call(engine,{:addTweet,tweetData})
-        IO.inspect tweetId, label: "tweetId"
         GenServer.cast(engine, {:addTweetsToUser, userName, tweetId})
         #tweetId = Twitter.Helper.addTweet(tweetData,tweets,tableSize)
         Twitter.Helper.readTweet(tweetData,tweetId, engine)
@@ -91,11 +88,13 @@ defmodule Twitter.Client do
 
   def handle_cast({:receive, userName, tweetUser, tweet}, state) do
     {user, engine, tweets} = state
-    if Twitter.Helper.isLogin(userName, engine) == 1 do
+    tweets = if Twitter.Helper.isLogin(userName, engine) == 1 do
       IO.inspect [tweetUser,tweet], label: userName
+      tweets
     else
-        tweets = tweets++tweet
+        tweets++tweet
     end
+    state = {user, engine, tweets}
     {:noreply, state}
   end
 
@@ -115,6 +114,17 @@ defmodule Twitter.Client do
    {:noreply, state}
   end
 
+  def handle_call({:loginUser, passwd}, _from, state) do
+    {user, engine, tweets} = state
+    loggedIn = GenServer.call(engine, {:login, user, passwd})
+    rtweets = if loggedIn do
+      state = {user, engine, []}
+      tweets
+    else
+      []
+    end
+    {:reply, rtweets, state}
+  end
   # testing functions
 
    def handle_cast({:getUserTable, pid}, state) do

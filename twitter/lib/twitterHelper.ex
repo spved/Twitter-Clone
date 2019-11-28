@@ -9,16 +9,18 @@ def readValue(data) do
   list
 end
 
-def validateUser([]) do
+def isValid([]) do
   false
 end
 
-def validateUser([{_,_}]) do
+def isValid(_) do
+  #IO.inspect "reached here"
   true
 end
 
 def validateUser(userName) do
-  validateUser(readValue(:ets.lookup(:users, userName)))
+  #IO.inspect readValue(:ets.lookup(:users, userName)), label: "here"
+  isValid(readValue(:ets.lookup(:users, userName)))
 end
 
 def isLogin(userName, engine) do
