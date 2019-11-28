@@ -30,6 +30,42 @@ defmodule TwitterClientTest do
   test "querySubscribedTo: Pass" do
     {engine, clients} = Twitter.Test.Helper.createEngineAndClient()
     Twitter.Test.Helper.createTestCase1(engine, clients)
-    IO.inspect GenServer.call(Enum.at(clients,1), {:querySubscribedTo, 4}), label: "querySubscribedTo"
+    tweets = GenServer.call(Enum.at(clients,2), {:querySubscribedTo})
+    assert tweets == ["tweet 1 #tweet1 @1 @2","tweet 3 #tweet3 #tweet2 @3 @2 @2","tweet 3 #tweet3 #tweet2 @3 @2 @2"]
+  end
+
+  test "querySubscribedTo: No subscribers" do
+    {engine, clients} = Twitter.Test.Helper.createEngineAndClient()
+    Twitter.Test.Helper.createTestCase1(engine, clients)
+    tweets = GenServer.call(Enum.at(clients,0), {:querySubscribedTo})
+    assert tweets == []
+  end
+
+  test "querySubscribedTo: subscribers have no tweets" do
+    {engine, clients} = Twitter.Test.Helper.createEngineAndClient()
+    Twitter.Test.Helper.createTestCase1(engine, clients)
+    tweets = GenServer.call(Enum.at(clients,3), {:querySubscribedTo})
+    assert tweets == []
+  end
+
+  test "queryHashtags: pass" do
+    {engine, clients} = Twitter.Test.Helper.createEngineAndClient()
+    Twitter.Test.Helper.createTestCase1(engine, clients)
+    tweets = GenServer.call(Enum.at(clients,0), {:queryHashTags, "tweet2"})
+    assert tweets == ["tweet 2 #tweet2 @2 @3","tweet 3 #tweet3 #tweet2 @3 @2 @2"]
+  end
+
+  test "queryHashtags: hashtag not present" do
+    {engine, clients} = Twitter.Test.Helper.createEngineAndClient()
+    Twitter.Test.Helper.createTestCase1(engine, clients)
+    tweets = GenServer.call(Enum.at(clients,0), {:queryHashTags, "yesgowell"})
+    assert tweets == []
+  end
+
+  test "queryMentionedIn: pass" do
+    {engine, clients} = Twitter.Test.Helper.createEngineAndClient()
+    Twitter.Test.Helper.createTestCase1(engine, clients)
+    tweets = GenServer.call(Enum.at(clients,2), {:queryMentions})
+    assert tweets == ["tweet 2 #tweet2 @2 @3", "tweet 3 #tweet3 #tweet2 @3 @2 @2", "tweet 1 #tweet1 @1 @2"]
   end
 end

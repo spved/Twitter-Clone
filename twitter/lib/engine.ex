@@ -17,7 +17,7 @@ defmodule Twitter.Engine do
   end
 
   #login/logout
-  
+
   def handle_call({:login,userName, password}, _from, state) do
     {users,_,_,_,_,_,_,_} = state
     if Twitter.Helper.validateUser(userName) do
@@ -77,21 +77,15 @@ defmodule Twitter.Engine do
   #insert and get tweet
   def handle_call({:getTweet, tweetId}, _from, state) do
     {_,tweets,_,_,_,_,_,_} = state
-    tweet = :ets.lookup(tweets, tweetId)
-    IO.inspect tweet, label: "tweet added"
+    tweet = Twitter.Helper.readValue(:ets.lookup(tweets, tweetId))
+    #IO.inspect tweet, label: "tweet added"
     {:reply, tweet, state}
   end
 
   def handle_call({:addTweet, tweet}, _from, state) do
     {_,tweets,_,_,_,_,_,tableSize} = state
     id = :ets.update_counter(tableSize, "tweets", {2,1})
-    IO.inspect id, label: "id"
-    IO.inspect tweet, label: "tweet"
-
     :ets.insert_new(tweets, {id, tweet})
-
-    IO.inspect :ets.lookup(tweets, id)
-
     {:reply, id, state}
   end
 
@@ -115,13 +109,8 @@ defmodule Twitter.Engine do
 
   #subscribedTo table insert_new, insert, get
   def handle_call({:getSubscribersOf, user}, _from, state) do
-    IO.inspect user, label: "user"
     {_,_,_,subscribedTo,_,_,_,_} = state
     list = Twitter.Helper.readValue(:ets.lookup(subscribedTo, user))
-    IO.inspect list
-    #Enum.each list, fn l -> 
-     # IO.inspect l
-    #end
     {:reply, list, state}
   end
 
