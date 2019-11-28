@@ -68,4 +68,26 @@ defmodule TwitterClientTest do
     tweets = GenServer.call(Enum.at(clients,2), {:queryMentions})
     assert tweets == ["tweet 2 #tweet2 @2 @3", "tweet 3 #tweet3 #tweet2 @3 @2 @2", "tweet 1 #tweet1 @1 @2"]
   end
+
+  test "tweet: send" do
+    {engine, clients} = Twitter.Test.Helper.createEngineAndClient()
+    Twitter.Test.Helper.createTestCase1(engine, clients)
+    GenServer.cast(Enum.at(clients,2), {:tweet, "tweet 4 #tweet4 @4"})
+    :timer.sleep(10)
+    assert :ets.lookup(:tweets, 4) == [{4, "tweet 4 #tweet4 @4"}]
+    assert :ets.lookup(:hashTagTweetMap, "#tweet4") == [{"#tweet4", [4]}]
+    IO.inspect :ets.lookup(:mentionUserMap, "4") == [{"4", [4]}]
+  end
+
+  test "login" do
+    {engine, clients} = Twitter.Test.Helper.createEngineAndClient()
+    Twitter.Test.Helper.createTestCase1(engine, clients)
+    GenServer.cast(Enum.at(clients,2), {:tweet, "tweet 4 #tweet4 @4"})
+    GenServer.cast(Enum.at(clients,2), {:tweet, "tweet 4 #tweet5 @4"})
+
+    :timer.sleep(10)
+
+    IO.inspect GenServer.call(Enum.at(clients,4), {:loginUser, "passwd"}), label: "loggedIn"
+
+  end
 end

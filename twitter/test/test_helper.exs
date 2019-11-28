@@ -26,7 +26,7 @@ defmodule Twitter.Test.Helper do
       pid = Enum.at(clients,count)
       Twitter.Client.register(pid, to_string(count), passwd, email)
     end)
-    IO.inspect :ets.lookup(:users, "1")
+    #IO.inspect :ets.lookup(:users, "1"), label: "Check always"
     addTweets()
     addSubscribers()
     addSubscribersOf()

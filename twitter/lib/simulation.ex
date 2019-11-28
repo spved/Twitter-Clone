@@ -8,7 +8,7 @@ defmodule Twitter.Simulator do
   simulation = :ets.new(:simulation, [:named_table,:public])
   :ets.insert_new(simulation, {"tweetCount", 0})
 
- 
+
 
   #Register all the users
   IO.inspect "Registering users"
@@ -20,13 +20,13 @@ defmodule Twitter.Simulator do
             GenServer.call(engine, {:login, user, pwd})
           end)
 
-# {_,_,users} = 
+# {_,_,users} =
 # GenServer.call(engine,{:getUserTable})
-  
+
   #Deleting users randomly
   IO.inspect "Deletion"
   IO.inspect length(clients)
-  
+
 deletedUsers = Enum.map((1..round(length(clients)*0.1)), fn(x) ->
           deleteUser = Enum.random(clients)
           IO.inspect deleteUser, label: "deleteUser"
@@ -35,7 +35,7 @@ deletedUsers = Enum.map((1..round(length(clients)*0.1)), fn(x) ->
           GenServer.cast(deleteUser, {:getUserTable, deleteUser})
           GenServer.cast(deleteUser, {:delete, deleteUser})
            #IO.inspect "After deletion"
-          GenServer.cast(deleteUser, {:getUserTable, deleteUser}) 
+          GenServer.cast(deleteUser, {:getUserTable, deleteUser})
           deleteUser
      end)
 
@@ -57,10 +57,17 @@ IO.inspect clients, label: "clientsAfter"
      IO.inspect userName, label: "userName"
      GenServer.cast(userSubscribing,{:subscribe,userSubscribing, userName})
      IO.inspect "checking subscription"
-     GenServer.call(userSubscribingTo,{:getSubscribersOf, userName}) 
+     GenServer.call(userSubscribingTo,{:getSubscribersOf, userName})
  end)
- 
- 
+
+
+ IO.inspect "query subscribed to"
+
+ queryUser = Enum.random(clients)
+ IO.inspect queryUser, label: "queryUser"
+ GenServer.call(queryUser,{:querySubscribedTo})
+
+
  tweetList=[]
  tweetList = tweetList ++ ["Tweet1","Tweet2","Tweet3","Tweet4","Tweet5","Tweet6","Tweet7","Tweet8","Tweet9","Tweet10"]
 
@@ -72,15 +79,15 @@ IO.inspect clients, label: "clientsAfter"
  Enum.map((1..numTweets), fn(x) ->
     tweetData = Enum.random(tweetList)
   #  user = Enum.random(clients)
- IO.inspect user, label: "user to tweet"   
+ IO.inspect user, label: "user to tweet"
   IO.inspect "subscribers pf chosen user"
   userName = GenServer.call(user,{:getUserName})
   IO.inspect userName, label: "userName"
- GenServer.call(user,{:getSubscribersOf, userName}) 
+ GenServer.call(user,{:getSubscribersOf, userName})
  [{_, num_tweets}] = :ets.lookup(:simulation, "tweetCount")
  :ets.insert(simulation, {"tweetCount", num_tweets+1})
  #IO.inspect num_tweets+1, label: "num_tweets+1"
- GenServer.cast(user,{:tweet,userName, tweetData}) 
+ GenServer.cast(user,{:tweet, tweetData})
  #IO.inspect "getTweet"
 #GenServer.call(engine,{:getTweet, 1})
 end)
@@ -101,78 +108,6 @@ end)
  IO.inspect deleteUser, label: "deleteUser to delete tweets"
  userName = GenServer.call(deleteUser,{:getUserName})
  GenServer.cast(deleteUser, {:delete, deleteUser})
- 
-
-   #[{_, currentList}] = :ets.lookup(hashTagTweetMap, "#Concurrency")
-  #IO.inspect currentList
-
-    #IO.inspect length(users)
-    #IO.inspect :ets.lookup(users, "user2")
-   #register("user6","pwd_user6","user6@gmail.com",users)
-   #IO.inspect :ets.lookup(users, "user6")
-
-   #Twitter.register("user6","pwd_user6","user6@gmail.com",users)
-   #IO.inspect :ets.lookup(users, "user6")
-
-   #Twitter.tweet("user3", "tweet1", subscribers)
-   #Twitter.Client.querySubscribedTo("user3",subscribers,tweetUserMap,tweets)
-   #Twitter.Client.querySubscribedTo("user6",subscribers,tweetUserMap, tweets)
-   
-   #Twitter.Client.isLogin("user3", users)
-   #Twitter.Client.isLogin("user7", users)
-   #Twitter.Client.login("user4", "pwd_uer4", users)
-   #Twitter.Client.login("user4", "pwd_user4", users)
-   #Twitter.Client.login("user7", "pwd_uer4", users)
-
-   #Twitter.Client.tweet("user3", "Got the first tweet #hiveFive", subscribers, users)
-   #Twitter.Client.reTweet("user5", "Got the first tweet #hiveFive", subscribers, users)
-
-   #Twitter.Client.logout("user4", users)
-   #Twitter.Client.tweet("user3", "Got the second tweet #hiveFive", subscribers, users)
-
-   #Twitter.queryMentions("user2", mentionUserMap, tweets)
-
-   #IO.inspect "Before subscribe"
-   #IO.inspect :ets.lookup(subscribers, "user2")
-   #IO.inspect :ets.lookup(subscribedTo, "user4")
-
-  #Twitter.Helper.subscribe("user4","user2", subscribedTo, subscribers)
-
-   #IO.inspect "After subscribe"
-
-   #IO.inspect :ets.lookup(subscribers, "user2")
-   #IO.inspect :ets.lookup(subscribedTo, "user4")
-
-   #IO.inspect :ets.lookup(tweetUserMap, "user3")
-
-  #Twitter.Helper.updateTweetUserMap("user3", "T10", tweetUserMap)
-
-  #IO.inspect :ets.lookup(tweetUserMap, "user3")
-
-  #IO.inspect "size"
-  #Twitter.Helper.addTweet("tweets @user3 #UF",tweets, tableSize)
-
-  #IO.inspect :ets.lookup(tweets, "T6")
-  #IO.inspect "before"
-  #IO.inspect :ets.lookup(mentionUserMap, "user3")
-
-  #Twitter.Helper.readTweet(tweets,"T6",hashTagTweetMap, users, mentionUserMap)
-
-  #IO.inspect "after"
-  #IO.inspect :ets.lookup(mentionUserMap, "user3")
-  #IO.inspect :ets.lookup(hashTagTweetMap, "#UF")
-
-  #Testing all the main functions
-
-  # Register
-  #IO.inspect "Before Register"
-
-
-
-  #Twitter.Client.register("user6","user6_pwd","user6@email.com",users, tableSize)
-
-  #IO.inspect "Before Register"
-
     infinite(numUsers*numTweets*0.8, startTime)
    end
 
@@ -183,10 +118,12 @@ end)
     if num_tweets >= total_tweets do
       #simulation = :ets.new(:simulation, [:named_table,:public])
       #:ets.insert_new(simulation, {"tweetCount", 0})
+
       currentTime = System.system_time(:millisecond)
       endTime = currentTime - startTime
       IO.puts "Convergence Achieved in = "<> Integer.to_string(endTime)<> "ms"
       IO.puts("Converged")
+
       #IO.puts(maxHops)
     else
     IO.inspect num_tweets, label: "num_tweets"
