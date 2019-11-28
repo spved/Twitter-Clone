@@ -8,10 +8,8 @@ defmodule Twittert do
       numUsers = Enum.at(args, 0) |> String.to_integer()
       numTweets = Enum.at(args, 1) |> String.to_integer()
 
-      hashTagTweetMap = :ets.new(:hashTagTweetMap, [:named_table,:public])
-
       engine = Twitter.Engine.start_node()
-      GenServer.call(engine, {:initDB})
+      #GenServer.call(engine, {:initDB})
       IO.inspect engine
 
       clients =  Enum.map(1..numUsers, fn _ ->
