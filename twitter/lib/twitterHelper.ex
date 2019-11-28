@@ -27,8 +27,8 @@ end
 
 
 
-def readTweet(tweets,tweetId, engine) do
-  tweet = readValue(:ets.lookup(tweets, tweetId))
+def readTweet(tweet,tweetId, engine) do
+  #tweet = readValue(:ets.lookup(tweets, tweetId))
   #IO.inspect tweet
   #IO.inspect String.contains? tweet, "@"
   #IO.inspect String.contains? tweet, "#"
