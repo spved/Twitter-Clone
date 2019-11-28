@@ -11,7 +11,7 @@ defmodule Twitter.Engine do
       #currentList = GenServer.call(self(),{:getSubscribers, userName})
       #for each subscriber get tweets
       Enum.map(currentList, fn ni ->
-      if Twitter.Helper.validateUser(ni, users) do
+      if Twitter.Helper.validateUser(ni) do
       pid = List.first(Twitter.Helper.readValue(:ets.lookup(users, ni)))
 
       GenServer.cast(pid, {:receive, ni, userName, tweet})

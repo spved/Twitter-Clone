@@ -81,7 +81,7 @@ defmodule Twitter.Simulator do
             user = Twitter.Simulator.Helper.generateUserId(i)
             pwd = Twitter.Simulator.Helper.generatePassword(i)
             mail = Twitter.Simulator.Helper.generateMail(i)
-            GenServer.cast(x, {:register, user, pwd, mail})
+            GenServer.call(x, {:register, user, pwd, mail})
             GenServer.call(engine, {:login, user, pwd})
           end)
 
@@ -129,7 +129,7 @@ IO.inspect clients, label: "clientsAfter"
 
  queryUser = Enum.random(clients)
  IO.inspect queryUser, label: "queryUser"
- GenServer.call(queryUser,{:querySubscribedTo, queryUser})
+ GenServer.call(queryUser,{:querySubscribedTo})
 
  tweetList=[]
  tweetList = tweetList ++ ["Tweet1","Tweet2","Tweet3","Tweet4","Tweet5","Tweet6","Tweet7","Tweet8","Tweet9","Tweet10"]
