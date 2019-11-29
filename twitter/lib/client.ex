@@ -29,17 +29,18 @@ defmodule Twitter.Client do
   def handle_call({:querySubscribedTo}, _from, state) do
   {userName,engine, _} = state
    currentList = GenServer.call(engine,{:getSubscribers, userName})
+   IO.inspect currentList, label: "querySubscribedTo, currentList"
     #for each subscriber get tweets
     subscribedTweets = List.flatten(Enum.map(currentList, fn ni ->
           tweetList = GenServer.call(engine,{:getTweetsOfUser, ni})
-
+          IO.inspect tweetList, label: "tweets of user"
            #get tweets for each tweet id
            stweets = Enum.map(tweetList, fn n ->
            stweet = GenServer.call(engine, {:getTweet, n})
             stweet
           end)
        end))
-       #IO.inspect subscribedTweets
+       IO.inspect subscribedTweets, label: "subscribedTweets"
        subscribedTweets
        {:reply, subscribedTweets, state}
     end
@@ -127,6 +128,12 @@ defmodule Twitter.Client do
     {:reply, rtweets, state}
   end
   # testing functions
+
+   def handle_call({:returnStateTweets}, _from, state) do
+      {_,_,tweetList} = state
+      IO.inspect tweetList, label: "returnStateTweets"
+      {:reply, tweetList, state}
+   end
 
    def handle_cast({:getUserTable, pid}, state) do
     {userName,engine, _} = state
