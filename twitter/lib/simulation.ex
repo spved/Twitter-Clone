@@ -94,31 +94,32 @@ end)
  end)
 
 
- #:timer.sleep(10000);
+ 
+ Enum.map((1..round(length(clients)*0.2)), fn(x) ->
+  userToRetweet = Enum.random(clients)
+  #IO.inspect userToRetweet, label: "userToRetweet"
+  userName = GenServer.call(userToRetweet,{:getUserName})
+  #IO.inspect userName, label: "userName"
+  list = GenServer.call(engine,{:getSubscribersOf, userName})
+  #IO.inspect list, label: "list"
+  choosenUser = Enum.at(list, 0)
+  #IO.inspect choosenUser, label: "choosenUser"
+  tweetsOfUser = GenServer.call(engine,{:getTweetsOfUser, choosenUser})
+  #IO.inspect tweetsOfUser, label: "tweetsOfUser"
+  tweetId = Enum.at(tweetsOfUser, 0)
+  #IO.inspect tweetId, label: "tweetId"
+  tweet = GenServer.call(engine,{:getTweet, tweetId})
+  #IO.inspect tweet, label: "tweet"
+  GenServer.cast(userToRetweet,{:reTweet, tweetId, tweet})
+  #GenServer.cast({:reTweet,userName, tweetData, subscribers, users}, state) do
 
- userToRetweet = Enum.random(clients)
- IO.inspect userToRetweet, label: "userToRetweet"
- userName = GenServer.call(userToRetweet,{:getUserName})
- IO.inspect userName, label: "userName"
- list = GenServer.call(engine,{:getSubscribersOf, userName})
- IO.inspect list, label: "list"
- choosenUser = Enum.at(list, 0)
- IO.inspect choosenUser, label: "choosenUser"
- tweetsOfUser = GenServer.call(engine,{:getTweetsOfUser, choosenUser})
- IO.inspect tweetsOfUser, label: "tweetsOfUser"
- tweetID = Enum.at(tweetsOfUser, 0)
- IO.inspect tweetID, label: "tweetID"
- tweet = GenServer.call(engine,{:getTweet, tweetID})
- IO.inspect tweet, label: "tweet"
- #GenServer.cast({:reTweet,userName, tweetData, subscribers, users}, state) do
-
- #if(tweetToBeReTweeted != nil) do
+  #if(tweetToBeReTweeted != nil) do
   #GenServer.cast({:reTweet,userName, tweetData, subscribers, users})
     #IO.inspect "not nil"
- #else
+  #else
     #IO.inspect "nil"
- #end
-
+  #end
+ end)
 
 
 
