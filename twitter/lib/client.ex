@@ -29,18 +29,18 @@ defmodule Twitter.Client do
   def handle_call({:querySubscribedTo}, _from, state) do
   {userName,engine, _} = state
    currentList = GenServer.call(engine,{:getSubscribers, userName})
-   IO.inspect currentList, label: "querySubscribedTo, currentList"
+   #IO.inspect currentList, label: "querySubscribedTo, currentList"
     #for each subscriber get tweets
     subscribedTweets = List.flatten(Enum.map(currentList, fn ni ->
           tweetList = GenServer.call(engine,{:getTweetsOfUser, ni})
-          IO.inspect tweetList, label: "tweets of user"
+          #IO.inspect tweetList, label: "tweets of user"
            #get tweets for each tweet id
            stweets = Enum.map(tweetList, fn n ->
            stweet = GenServer.call(engine, {:getTweet, n})
             stweet
           end)
        end))
-       IO.inspect subscribedTweets, label: "subscribedTweets"
+      #IO.inspect subscribedTweets, label: "subscribedTweets"
        subscribedTweets
        {:reply, subscribedTweets, state}
     end
@@ -92,11 +92,13 @@ defmodule Twitter.Client do
   def handle_cast({:receive, userName, tweetUser, tweet}, state) do
     {user, engine, tweets} = state
     tweets = if Twitter.Helper.isLogin(userName, engine) == 1 do
+
       tweets
     else
       tweets++[tweet]
     end
     state = {user, engine, tweets}
+
     {:noreply, state}
   end
 

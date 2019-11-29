@@ -10,14 +10,14 @@ defmodule Twittert do
 
       engine = Twitter.Engine.start_node()
       #GenServer.call(engine, {:initDB})
-      IO.inspect engine
+     #IO.inspect engine
 
       clients =  Enum.map(1..numUsers, fn _ ->
             pid = Twitter.Client.start_node()
             GenServer.cast(pid, {:setEngine, engine})
             pid
           end)
-          IO.inspect clients
+         #IO.inspect clients
 
       Twitter.Simulator.simulate(numUsers, numTweets, clients, engine)
     end
