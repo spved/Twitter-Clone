@@ -11,7 +11,7 @@ defmodule Twitter.Simulator do
 
 
   #Register all the users
-  IO.inspect "Registering users"
+  #IO.inspect "Registering users"
           Enum.each(Enum.with_index(clients), fn({x, i}) ->
             user = Twitter.Simulator.Helper.generateUserId(i)
             pwd = Twitter.Simulator.Helper.generatePassword(i)
@@ -24,12 +24,12 @@ defmodule Twitter.Simulator do
 # GenServer.call(engine,{:getUserTable})
 
   #Deleting users randomly
-  IO.inspect "Deletion"
-  IO.inspect length(clients)
+  #IO.inspect "Deletion"
+  #IO.inspect length(clients)
 
 deletedUsers = Enum.map((1..round(length(clients)*0.1)), fn(x) ->
           deleteUser = Enum.random(clients)
-          IO.inspect deleteUser, label: "deleteUser"
+   #       IO.inspect deleteUser, label: "deleteUser"
           #IO.inspect "Before deletion"
           #deleteUser(engine, pid)
           GenServer.cast(deleteUser, {:getUserTable, deleteUser})
@@ -39,39 +39,39 @@ deletedUsers = Enum.map((1..round(length(clients)*0.1)), fn(x) ->
           deleteUser
      end)
 
-IO.inspect deletedUsers, label: "deletedUsers"
+#IO.inspect deletedUsers, label: "deletedUsers"
 
-IO.inspect clients, label: "clientsBefore"
+#IO.inspect clients, label: "clientsBefore"
  clients = clients -- deletedUsers
-IO.inspect clients, label: "clientsAfter"
+#IO.inspect clients, label: "clientsAfter"
 
 
- IO.inspect "Subscribe"
+ #IO.inspect "Subscribe"
 
   Enum.map((1..round(length(clients)*0.9)), fn(x) ->
      userSubscribing = Enum.random(clients)
      userSubscribingTo = Enum.random(clients)
-     IO.inspect userSubscribing, label: "userSubscribing"
-     IO.inspect userSubscribingTo, label: "userSubscribingTo"
+     #IO.inspect userSubscribing, label: "userSubscribing"
+     #IO.inspect userSubscribingTo, label: "userSubscribingTo"
      userName = GenServer.call(userSubscribingTo,{:getUserName})
-     IO.inspect userName, label: "userName"
+     #IO.inspect userName, label: "userName"
      GenServer.cast(userSubscribing,{:subscribe,userSubscribing, userName})
-     IO.inspect "checking subscription"
+     #IO.inspect "checking subscription"
      GenServer.call(userSubscribingTo,{:getSubscribersOf, userName})
  end)
 
 
- IO.inspect "query subscribed to"
+ #IO.inspect "query subscribed to"
 
  queryUser = Enum.random(clients)
- IO.inspect queryUser, label: "queryUser"
+ #IO.inspect queryUser, label: "queryUser"
  GenServer.call(queryUser,{:querySubscribedTo})
 
 
  tweetList=[]
  tweetList = tweetList ++ ["Tweet1","Tweet2","Tweet3","Tweet4","Tweet5","Tweet6","Tweet7","Tweet8","Tweet9","Tweet10"]
 
- IO.inspect "tweet"
+#IO.inspect "tweet"
 
  startTime = System.system_time(:millisecond)
 
@@ -79,10 +79,10 @@ IO.inspect clients, label: "clientsAfter"
  Enum.map((1..numTweets), fn(x) ->
     tweetData = Enum.random(tweetList)
   #  user = Enum.random(clients)
- IO.inspect user, label: "user to tweet"
-  IO.inspect "subscribers pf chosen user"
+ #IO.inspect user, label: "user to tweet"
+  #IO.inspect "subscribers pf chosen user"
   userName = GenServer.call(user,{:getUserName})
-  IO.inspect userName, label: "userName"
+  #IO.inspect userName, label: "userName"
  GenServer.call(user,{:getSubscribersOf, userName})
  [{_, num_tweets}] = :ets.lookup(:simulation, "tweetCount")
  :ets.insert(simulation, {"tweetCount", num_tweets+1})
@@ -98,14 +98,33 @@ end)
 
  userToRetweet = Enum.random(clients)
  IO.inspect userToRetweet, label: "userToRetweet"
- GenServer.call(userToRetweet,{:returnStateTweets})
+ userName = GenServer.call(userToRetweet,{:getUserName})
+ IO.inspect userName, label: "userName"
+ list = GenServer.call(engine,{:getSubscribersOf, userName})
+ IO.inspect list, label: "list"
+ choosenUser = Enum.at(list, 0)
+ IO.inspect choosenUser, label: "choosenUser"
+ tweetsOfUser = GenServer.call(engine,{:getTweetsOfUser, choosenUser})
+ IO.inspect tweetsOfUser, label: "tweetsOfUser"
+ tweetID = Enum.at(tweetsOfUser, 0)
+ IO.inspect tweetID, label: "tweetID"
+ tweet = GenServer.call(engine,{:getTweet, tweetID})
+ IO.inspect tweet, label: "tweet"
+ #GenServer.cast({:reTweet,userName, tweetData, subscribers, users}, state) do
+
+ #if(tweetToBeReTweeted != nil) do
+  #GenServer.cast({:reTweet,userName, tweetData, subscribers, users})
+    #IO.inspect "not nil"
+ #else
+    #IO.inspect "nil"
+ #end
 
 
 
 
 
  deleteUser = Enum.random(clients)
- IO.inspect deleteUser, label: "deleteUser to delete tweets"
+#IO.inspect deleteUser, label: "deleteUser to delete tweets"
  userName = GenServer.call(deleteUser,{:getUserName})
  GenServer.cast(deleteUser, {:delete, deleteUser})
     infinite(numUsers*numTweets*0.8, startTime)
@@ -122,11 +141,11 @@ end)
       currentTime = System.system_time(:millisecond)
       endTime = currentTime - startTime
       IO.puts "Convergence Achieved in = "<> Integer.to_string(endTime)<> "ms"
-      IO.puts("Converged")
+      #IO.puts("Converged")
 
       #IO.puts(maxHops)
     else
-    IO.inspect num_tweets, label: "num_tweets"
+    #IO.inspect num_tweets, label: "num_tweets"
     infinite(total_tweets, startTime)
    end
    end

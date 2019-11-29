@@ -177,7 +177,7 @@ defmodule Twitter.Engine do
    def handle_cast({:getUserTable, userName}, state) do
     {users,_,_,_,_,_,_,_} = state
     #IO.inspect pid
-    IO.inspect :ets.lookup(:users, userName), label: "userDetails"
+    #IO.inspect :ets.lookup(:users, userName), label: "userDetails"
     {:noreply, state}
   end
 
