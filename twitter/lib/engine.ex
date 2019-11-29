@@ -60,7 +60,7 @@ defmodule Twitter.Engine do
   #insert and get tweet
   def handle_call({:getTweet, tweetId}, _from, state) do
     {_,tweets,_,_,_,_,_,_} = state
-    tweet = Twitter.Helper.readValue(:ets.lookup(tweets, tweetId))
+    tweet = List.first(Twitter.Helper.readValue(:ets.lookup(tweets, tweetId)))
     #IO.inspect tweet, label: "tweet added"
     {:reply, tweet, state}
   end
@@ -68,7 +68,7 @@ defmodule Twitter.Engine do
   def handle_call({:addTweet, tweet}, _from, state) do
     {_,tweets,_,_,_,_,_,tableSize} = state
     id = :ets.update_counter(tableSize, "tweets", {2,1})
-    :ets.insert_new(tweets, {id, tweet})
+    :ets.insert_new(tweets, {id, [tweet, 0]})
     {:reply, id, state}
   end
 
@@ -190,6 +190,18 @@ defmodule Twitter.Engine do
     list = list ++ [suser]
     list = Enum.uniq(list)
       :ets.insert(subscribedTo, {user, list})
+    end
+    {:noreply, state}
+  end
+
+  def handle_cast({:retweet, tweetId}, state) do
+    tweet = Twitter.Helper.readValue(:ets.lookup(:tweets, tweetId))
+    if tweet == [] do
+    else
+      tweetData = List.first(tweet)
+      count = List.last(tweet)
+      tweet = [tweetData, count+1]
+      :ets.insert(:tweets, {tweetId, tweet})
     end
     {:noreply, state}
   end
