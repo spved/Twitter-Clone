@@ -1,4 +1,4 @@
-defmodule Twittert do
+defmodule Twitter do
   use GenServer
   def main(args) do
     if Enum.count(args) != 2 do
@@ -27,6 +27,9 @@ defmodule Twittert do
     {:ok, init_arg}
   end
 
+  def hello() do
+    "world"
+  end
 
 end
-Twittert.main(System.argv())
+Twitter.main(System.argv())

@@ -178,7 +178,7 @@ defmodule TwitterClientTest do
     :timer.sleep(100)
     assert :ets.lookup(:users, "2") ==  []
     assert :ets.lookup(:tweets, 2) ==  []
-    assert :ets.lookup(:tweets, 3) ==  []
+    assert :ets.lookup(:tweets, 3 ) ==  []
 
   end
 end
