@@ -47,18 +47,20 @@ defmodule Twitter.Client do
     def handle_cast({:tweet, tweetData}, state) do
         {userName,engine, _} = state
         GenServer.cast(engine, {:send, userName, tweetData})
-       tweetId = GenServer.call(engine,{:addTweet,tweetData})
+        tweetId = GenServer.call(engine,{:addTweet,tweetData})
         GenServer.cast(engine, {:addTweetsToUser, userName, tweetId})
         #tweetId = Twitter.Helper.addTweet(tweetData,tweets,tableSize)
         Twitter.Helper.readTweet(tweetData,tweetId, engine)
         {:noreply, state}
     end
 
-    def handle_cast({:reTweet,userName, tweetData, subscribers, users}, state) do
-        {_,engine, _} = state
+    def handle_cast({:reTweet, tweetId, tweetData}, state) do
+        {userName,engine, _} = state
         #def handle_cast({:send, userName, tweet, subscribers, users}, state) do
-        GenServer.cast(engine,{:send, userName, tweetData, subscribers, users})
+        GenServer.cast(engine,{:retweet, tweetId})
+        GenServer.cast(engine,{:send, userName, tweetData})
         #Twitter.Client.send(userName, tweetData, subscribers, users)
+        {:noreply, state}
     end
 #helper functions
 
@@ -89,13 +91,11 @@ defmodule Twitter.Client do
   def handle_cast({:receive, userName, tweetUser, tweet}, state) do
     {user, engine, tweets} = state
     tweets = if Twitter.Helper.isLogin(userName, engine) == 1 do
-      IO.inspect [tweetUser,tweet], label: userName
       tweets
     else
-        tweets++[tweet]
+      tweets++[tweet]
     end
     state = {user, engine, tweets}
-    IO.inspect state
     {:noreply, state}
   end
 
@@ -104,7 +104,7 @@ defmodule Twitter.Client do
     {:reply, userName, state}
   end
 
-  def handle_cast({:subscribe,user1, userId2}, state) do
+  def handle_cast({:subscribe, user1, userId2}, state) do
     {userId1 ,engine, _} = state
     #userId1 is subscribing to userId2
     #IO.inspect :ets.lookup(subscribers, userId2)

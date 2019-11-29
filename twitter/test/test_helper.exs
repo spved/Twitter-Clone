@@ -38,11 +38,11 @@ defmodule Twitter.Test.Helper do
 
   def addTweets() do
     id = :ets.update_counter(:tableSize, "tweets", {2,1})
-    :ets.insert_new(:tweets, {id, "tweet 1 #tweet1 @1 @2"})
+    :ets.insert_new(:tweets, {id, ["tweet 1 #tweet1 @1 @2",0]})
     id = :ets.update_counter(:tableSize, "tweets", {2,1})
-    :ets.insert_new(:tweets, {id, "tweet 2 #tweet2 @2 @3"})
+    :ets.insert_new(:tweets, {id, ["tweet 2 #tweet2 @2 @3",0]})
     id = :ets.update_counter(:tableSize, "tweets", {2,1})
-    :ets.insert_new(:tweets, {id, "tweet 3 #tweet3 #tweet2 @3 @2 @2"})
+    :ets.insert_new(:tweets, {id, ["tweet 3 #tweet3 #tweet2 @3 @2 @2",0]})
   end
 
   def addSubscribers() do
