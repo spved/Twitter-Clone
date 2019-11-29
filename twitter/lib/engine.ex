@@ -94,17 +94,10 @@ defmodule Twitter.Engine do
     {:reply, list, state}
   end
 
-  def handle_cast({:addTweetsToUser, user, tweetId}, state) do
-    {_,_,_,_,tweetUserMap,_,_,_} = state
-    list = Twitter.Helper.readValue(:ets.lookup(tweetUserMap, user))
-    if list == [] do
-      :ets.insert_new(tweetUserMap, {user, [tweetId]})
-    else
-      :ets.insert(tweetUserMap, {user, list++[tweetId]})
-    end
-    {:noreply, state}
-  end
+  
 
+  
+ 
   #mentionUserMap table insert_new, insert, get
   def handle_call({:getMentionedTweets, user}, _from, state) do
     {_,_,_,_,_,mentionUserMap,_,_} = state
@@ -120,7 +113,7 @@ defmodule Twitter.Engine do
   end
 
   def handle_call({:print}, _from, state) do
-    {users, tweets, subscribers, subscribedTo, tweetUserMap, mentionUserMap, hashTagTweetMap, tableSize} = state
+    {users, tweets, subscribers, subscribedTo, tweetUserMap, mentionUserMap, hashTagTweetMap, _} = state
 
     IO.inspect users, label: "users"
     IO.inspect tweets, label: "tweets"
@@ -132,7 +125,7 @@ defmodule Twitter.Engine do
     {:reply, :ok, state}
   end
 
-  def handle_call({:initDB}, _from, state) do
+  def handle_call({:initDB}, _from, _) do
     users = if :ets.whereis :user == :undefined do
       :ets.new(:users, [:named_table,:public])
     else
@@ -150,6 +143,17 @@ defmodule Twitter.Engine do
 
     state = {users, tweets, subscribers, subscribedTo, tweetUserMap, mentionUserMap, hashTagTweetMap, tableSize}
     {:reply, :ok, state}
+  end
+
+  def handle_cast({:addTweetsToUser, user, tweetId}, state) do
+    {_,_,_,_,tweetUserMap,_,_,_} = state
+    list = Twitter.Helper.readValue(:ets.lookup(tweetUserMap, user))
+    if list == [] do
+      :ets.insert_new(tweetUserMap, {user, [tweetId]})
+    else
+      :ets.insert(tweetUserMap, {user, list++[tweetId]})
+    end
+    {:noreply, state}
   end
 
   def handle_cast({:deleteUser, user}, state) do
@@ -174,8 +178,8 @@ defmodule Twitter.Engine do
   end
    #Functions for testing simulator
 
-   def handle_cast({:getUserTable, userName}, state) do
-    {users,_,_,_,_,_,_,_} = state
+   def handle_cast({:getUserTable, _}, state) do
+    {_,_,_,_,_,_,_,_} = state
     #IO.inspect pid
     #IO.inspect :ets.lookup(:users, userName), label: "userDetails"
     {:noreply, state}
