@@ -15,8 +15,12 @@ defmodule Twitter.Test.Helper do
   def createTestCase1(engine, clients) do
 
     addUsers(engine, clients)
-
-
+    addTweets()
+    addSubscribers()
+    addSubscribersOf()
+    addUserTweetMap()
+    addMentionUserMap()
+    addHashTagTweetMap()
   end
 
   def addUsers(_, clients) do
@@ -27,12 +31,6 @@ defmodule Twitter.Test.Helper do
       Twitter.Client.register(pid, to_string(count), passwd, email)
     end)
     #IO.inspect :ets.lookup(:users, "1"), label: "Check always"
-    addTweets()
-    addSubscribers()
-    addSubscribersOf()
-    addUserTweetMap()
-    addMentionUserMap()
-    addHashTagTweetMap()
 
   end
 

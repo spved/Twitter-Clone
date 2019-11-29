@@ -23,7 +23,7 @@ defmodule Twitter.Engine do
       list = Twitter.Helper.readValue(:ets.lookup(users, userName))
       userPassword = Enum.at(list, 1)
       loggedIn = if userPassword == password do
-        :ets.insert(users, {userName, List.replace_at(list, 2, 1)})
+        :ets.insert(users, {userName, List.replace_at(list, 3, 1)})
         true
       else
         false
@@ -37,7 +37,7 @@ defmodule Twitter.Engine do
     {users,_,_,_,_,_,_,_} = state
     if Twitter.Helper.validateUser(userName) do
       list = Twitter.Helper.readValue(:ets.lookup(users, userName))
-      :ets.insert(users, {userName, List.replace_at(list, 2, 0)})
+      :ets.insert(users, {userName, List.replace_at(list, 3, 0)})
     end
     {:reply,:ok, state}
   end

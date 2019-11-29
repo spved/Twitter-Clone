@@ -127,6 +127,12 @@ defmodule Twitter.Client do
     end
     {:reply, rtweets, state}
   end
+
+  def handle_call({:logoutUser}, _from, state) do
+    {user, engine, tweets} = state
+    GenServer.call(engine, {:logout, user})
+    {:reply, :ok, state}
+  end
   # testing functions
 
    def handle_call({:returnStateTweets}, _from, state) do

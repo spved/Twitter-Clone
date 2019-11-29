@@ -69,7 +69,15 @@ defmodule TwitterClientTest do
     assert tweets == ["tweet 2 #tweet2 @2 @3", "tweet 3 #tweet3 #tweet2 @3 @2 @2", "tweet 1 #tweet1 @1 @2"]
   end
 
-  test "tweet: send" do
+  test "tweet: send has no mentions and hashtags" do
+    {engine, clients} = Twitter.Test.Helper.createEngineAndClient()
+    Twitter.Test.Helper.createTestCase1(engine, clients)
+    GenServer.cast(Enum.at(clients,2), {:tweet, "tweet 4"})
+    :timer.sleep(100)
+    assert :ets.lookup(:tweets, 4) == [{4, ["tweet 4",0]}]
+  end
+
+  test "tweet: send has both mentions and hashtags" do
     {engine, clients} = Twitter.Test.Helper.createEngineAndClient()
     Twitter.Test.Helper.createTestCase1(engine, clients)
     GenServer.cast(Enum.at(clients,2), {:tweet, "tweet 4 #tweet4 @4"})
@@ -86,6 +94,11 @@ defmodule TwitterClientTest do
     :timer.sleep(100)
 
     assert GenServer.call(Enum.at(clients,4), {:loginUser, "passwd"}) == ["tweet 4 #tweet4 @4"]
+
+    [{_,val}] = :ets.lookup(:users, "4")
+    isLogin = List.last(val)
+    assert isLogin == 1
+
   end
 
   test "login: user recieved no tweets and logged in later" do
@@ -93,6 +106,20 @@ defmodule TwitterClientTest do
     Twitter.Test.Helper.createTestCase1(engine, clients)
 
     assert GenServer.call(Enum.at(clients,4), {:loginUser, "passwd"}) == []
+    [{_,val}] = :ets.lookup(:users, "4")
+    isLogin = List.last(val)
+    assert isLogin == 1
+  end
+
+  test "logout: user exists" do
+    {engine, clients} = Twitter.Test.Helper.createEngineAndClient()
+    Twitter.Test.Helper.createTestCase1(engine, clients)
+    GenServer.call(Enum.at(clients,4), {:loginUser, "passwd"})
+    GenServer.call(Enum.at(clients,4), {:logoutUser})
+    [{_,val}] = :ets.lookup(:users, "4")
+    isLogin = List.last(val)
+    assert isLogin == 0
+
   end
 
   test "reTweet: send" do
@@ -105,5 +132,53 @@ defmodule TwitterClientTest do
     :timer.sleep(100)
 
     assert :ets.lookup(:tweets, 4) == [{4, ["tweet 4 #tweet4 @4",1]}]
+  end
+
+  test "subscribe first" do
+    {engine, clients} = Twitter.Test.Helper.createEngineAndClient()
+    Twitter.Test.Helper.addUsers(engine, clients)
+    GenServer.cast(Enum.at(clients,2),{:subscribe, "2", "1"})
+    :timer.sleep(100)
+    assert :ets.lookup(:subscribers, "2") == [{"2", ["1"]}]
+    assert :ets.lookup(:subscribedTo, "1") == [{"1", ["2"]}]
+
+  end
+
+  test "subscribe : add to existing subscribers" do
+    {engine, clients} = Twitter.Test.Helper.createEngineAndClient()
+    Twitter.Test.Helper.createTestCase1(engine, clients)
+    GenServer.cast(Enum.at(clients,2),{:subscribe, "2", "1"})
+    :timer.sleep(100)
+    assert :ets.lookup(:subscribers, "2") ==  [{"2", ["0", "3", "4", "1"]}]
+    assert :ets.lookup(:subscribedTo, "1") ==  [{"1", ["4", "2"]}]
+  end
+
+  test "subscribe : subscribed one" do
+    {engine, clients} = Twitter.Test.Helper.createEngineAndClient()
+    Twitter.Test.Helper.createTestCase1(engine, clients)
+    GenServer.cast(Enum.at(clients,2),{:subscribe, "2", "3"})
+    :timer.sleep(100)
+    assert :ets.lookup(:subscribers, "2") ==  [{"2", ["0", "3", "4"]}]
+    assert :ets.lookup(:subscribedTo, "3") ==  [{"3", ["1", "2"]}]
+  end
+
+  test "delete user : having no tweets" do
+    {engine, clients} = Twitter.Test.Helper.createEngineAndClient()
+    Twitter.Test.Helper.createTestCase1(engine, clients)
+    GenServer.cast(Enum.at(clients,0),{:delete, "0"})
+    :timer.sleep(100)
+    assert :ets.lookup(:users, "0") ==  []
+    #assert :ets.lookup(:subscribedTo, "3") ==  [{"3", ["1", "2"]}]
+  end
+
+  test "delete user : having tweets" do
+    {engine, clients} = Twitter.Test.Helper.createEngineAndClient()
+    Twitter.Test.Helper.createTestCase1(engine, clients)
+    GenServer.cast(Enum.at(clients,2),{:delete, "2"})
+    :timer.sleep(100)
+    assert :ets.lookup(:users, "2") ==  []
+    assert :ets.lookup(:tweets, 2) ==  []
+    assert :ets.lookup(:tweets, 3) ==  []
+
   end
 end
